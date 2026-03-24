@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GabonCoin – Petites Annonces du Gabon</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --vert: #009e60;
+    --vert-dark: #007a4a;
+    --vert-light: #e6f7f0;
+    --jaune: #fcd116;
+    --jaune-dark: #e0b800;
+    --bleu: #003082;
+    --bleu-light: #e8edf8;
+    --blanc: #ffffff;
+    --gris: #f5f5f0;
+    --gris-mid: #e0ddd5;
+    --gris-text: #888;
+    --noir: #1a1a1a;
+    --shadow: 0 4px 24px rgba(0,0,0,0.10);
+    --shadow-hover: 0 8px 32px rgba(0,0,0,0.16);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--gris); color: var(--noir); min-height: 100vh; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--bleu) 0%, #001f5c 100%);
+    color: white;
+    padding: 0;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+  }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+    gap: 16px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: white;
+    flex-shrink: 0;
+  }
+  .logo-flag { display: flex; height: 32px; width: 26px; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+  .logo-flag span { flex: 1; }
+  .logo-text { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; letter-spacing: -1px; }
+  .logo-text span { color: var(--jaune); }
+  .logo-sub { font-size: 0.65rem; opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; margin-top: -4px; }
+
+  .search-bar {
+    flex: 1; max-width: 520px;
+    display: flex; background: white; border-radius: 50px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+  .search-bar input {
+    flex: 1; border: none; outline: none; padding: 11px 18px;
+    font-size: 0.92rem; font-family: 'DM Sans', sans-serif; color: var(--noir);
+  }
+  .search-bar button {
+    background: var(--jaune); border: none; padding: 0 20px; cursor: pointer;
+    font-size: 1rem; color: var(--bleu); font-weight: 700;
+  }
+  .search-bar button:hover { background: var(--jaune-dark); }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+  .btn { padding: 9px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: all .2s; font-family: 'DM Sans', sans-serif; }
+  .btn-outline { background: transparent; border: 2px solid rgba(255,255,255,0.5); color: white; }
+  .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: white; }
+  .btn-yellow { background: var(--jaune); color: var(--bleu); }
+  .btn-yellow:hover { background: var(--jaune-dark); transform: translateY(-1px); }
+  .btn-green { background: var(--vert); color: white; }
+  .btn-green:hover { background: var(--vert-dark); transform: translateY(-1px); }
+  .btn-red { background: #e53935; color: white; }
+  .btn-red:hover { background: #c62828; }
+  .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+
+  /* ── NAVIGATION TABS ── */
+  .nav-tabs {
+    background: rgba(0,0,0,0.2);
+    padding: 0 24px;
+    display: flex; gap: 0; overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 12px 20px; color: rgba(255,255,255,0.75); font-size: 0.87rem;
+    font-weight: 500; cursor: pointer; white-space: nowrap;
+    border-bottom: 3px solid transparent; transition: all .2s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
+  .nav-tab.active { color: var(--jaune); border-bottom-color: var(--jaune); font-weight: 600; }
+  .nav-tab .tab-icon { font-size: 1rem; }
+
+  /* ── HERO BANNER ── */
+  .hero {
+    background: linear-gradient(135deg, var(--vert) 0%, var(--vert-dark) 100%);
+    color: white; text-align: center; padding: 40px 24px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; position: relative; }
+  .hero p { opacity: 0.9; margin-top: 8px; font-size: 1rem; position: relative; }
+  .hero-stats { display: flex; justify-content: center; gap: 40px; margin-top: 20px; position: relative; }
+  .hero-stat { text-align: center; }
+  .hero-stat strong { display: block; font-size: 1.6rem; font-weight: 700; color: var(--jaune); font-family: 'Playfair Display', serif; }
+  .hero-stat span { font-size: 0.78rem; opacity: 0.85; }
+
+  /* ── MAIN LAYOUT ── */
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 20px; display: flex; gap: 24px; }
+  .sidebar { width: 240px; flex-shrink: 0; }
+  .content { flex: 1; min-width: 0; }
+
+  /* ── SIDEBAR ── */
+  .sidebar-card { background: white; border-radius: var(--radius); padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .sidebar-card h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gris-text); margin-bottom: 12px; font-weight: 600; }
+  .filter-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background .15s; font-size: 0.88rem; }
+  .filter-item:hover { background: var(--gris); }
+  .filter-item.active { background: var(--vert-light); color: var(--vert-dark); font-weight: 600; }
+  .filter-item .count { margin-left: auto; background: var(--gris-mid); color: var(--gris-text); font-size: 0.75rem; padding: 2px 7px; border-radius: 50px; }
+  .filter-item.active .count { background: var(--vert); color: white; }
+
+  .price-range label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: var(--gris-text); }
+  .price-range input[type=range] { width: 100%; accent-color: var(--vert); }
+  .price-row { display: flex; gap: 8px; margin-top: 8px; }
+  .price-row input { width: 100%; border: 1.5px solid var(--gris-mid); border-radius: 8px; padding: 7px 10px; font-size: 0.83rem; font-family: 'DM Sans', sans-serif; }
+  .price-row input:focus { outline: none; border-color: var(--vert); }
+
+  /* ── ANNOUNCEMENTS GRID ── */
+  .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+  .toolbar-left { display: flex; gap: 8px; }
+  .sort-select { border: 1.5px solid var(--gris-mid); border-radius: 8px; padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; background: white; cursor: pointer; }
+  .sort-select:focus { outline: none; border-color: var(--vert); }
+  .results-count { font-size: 0.88rem; color: var(--gris-text); }
+
+  .ads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .ad-card {
+    background: white; border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); cursor: pointer; transition: all .22s;
+    position: relative;
+  }
+  .ad-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+  .ad-img { width: 100%; height: 160px; object-fit: cover; background: var(--gris-mid); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+  .ad-img img { width: 100%; height: 100%; object-fit: cover; }
+  .ad-badge { position: absolute; top: 10px; left: 10px; background: var(--jaune); color: var(--bleu); font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 50px; }
+  .ad-fav { position: absolute; top: 10px; right: 10px; background: white; border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 1rem; transition: transform .15s; }
+  .ad-fav:hover { transform: scale(1.15); }
+  .ad-body { padding: 12px 14px; }
+  .ad-title { font-size: 0.92rem; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ad-price { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--vert); margin-top: 6px; }
+  .ad-price span { font-size: 0.75rem; font-family: 'DM Sans', sans-serif; color: var(--gris-text); font-weight: 400; }
+  .ad-meta { display: flex; gap: 8px; margin-top: 8px; font-size: 0.75rem; color: var(--gris-text); flex-wrap: wrap; }
+  .ad-meta i { display: flex; align-items: center; gap: 3px; }
+
+  /* ── MODALS ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: white; border-radius: 18px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalIn .25s ease; }
+  .modal-wide { max-width: 720px; }
+  @keyframes modalIn { from { transform: translateY(20px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-header { padding: 22px 24px 16px; border-bottom: 1.5px solid var(--gris-mid); display: flex; align-items: center; justify-content: space-between; }
+  .modal-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--gris-text); padding: 4px 8px; border-radius: 6px; }
+  .modal-close:hover { background: var(--gris); }
+  .modal-body { padding: 22px 24px; }
+  .modal-footer { padding: 14px 24px 20px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1.5px solid var(--gris-mid); }
+
+  /* ── FORMS ── */
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #444; }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; border: 1.5px solid var(--gris-mid); border-radius: 10px;
+    padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    transition: border-color .15s;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--vert); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-hint { font-size: 0.78rem; color: var(--gris-text); margin-top: 4px; }
+
+  .upload-zone { border: 2px dashed var(--gris-mid); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all .2s; background: var(--gris); }
+  .upload-zone:hover { border-color: var(--vert); background: var(--vert-light); }
+  .upload-zone p { font-size: 0.85rem; color: var(--gris-text); margin-top: 8px; }
+  .upload-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .upload-preview { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; border: 2px solid var(--gris-mid); }
+
+  /* ── ADMIN PANEL ── */
+  .admin-panel { padding: 0; }
+  .admin-tabs { display: flex; border-bottom: 2px solid var(--gris-mid); margin-bottom: 20px; }
+  .admin-tab { padding: 10px 18px; cursor: pointer; font-size: 0.88rem; font-weight: 500; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .15s; color: var(--gris-text); }
+  .admin-tab.active { color: var(--vert); border-bottom-color: var(--vert); font-weight: 600; }
+  .admin-section { display: none; }
+  .admin-section.active { display: block; }
+
+  .category-list { list-style: none; }
+  .category-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--gris); border-radius: 10px; margin-bottom: 8px; }
+  .category-item .drag-handle { cursor: grab; color: var(--gris-text); font-size: 1.1rem; }
+  .category-item .cat-icon { font-size: 1.2rem; }
+  .category-item .cat-name { flex: 1; font-weight: 500; font-size: 0.9rem; }
+  .category-item .cat-actions { display: flex; gap: 6px; }
+  .icon-btn { background: none; border: none; cursor: pointer; padding: 5px 8px; border-radius: 6px; font-size: 0.95rem; transition: background .15s; }
+  .icon-btn:hover { background: var(--gris-mid); }
+  .icon-btn.danger:hover { background: #fde8e8; color: #e53935; }
+
+  .add-cat-form { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .add-cat-form input { flex: 1; min-width: 120px; border: 1.5px solid var(--gris-mid); border-radius: 8px; padding: 9px 13px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; }
+  .add-cat-form input:focus { outline: none; border-color: var(--vert); }
+
+  .ads-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .ads-table th { text-align: left; padding: 10px 12px; background: var(--gris); border-bottom: 2px solid var(--gris-mid); font-weight: 600; color: #555; }
+  .ads-table td { padding: 10px 12px; border-bottom: 1px solid var(--gris-mid); vertical-align: middle; }
+  .ads-table tr:hover td { background: var(--gris); }
+  .status-badge { padding: 3px 9px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+  .status-active { background: var(--vert-light); color: var(--vert-dark); }
+  .status-pending { background: #fff8e1; color: #e65100; }
+
+  .users-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .users-table th { text-align: left; padding: 10px 12px; background: var(--gris); border-bottom: 2px solid var(--gris-mid); font-weight: 600; color: #555; }
+  .users-table td { padding: 10px 12px; border-bottom: 1px solid var(--gris-mid); vertical-align: middle; }
+  .users-table tr:hover td { background: var(--gris); }
+  .avatar-sm { width: 32px; height: 32px; border-radius: 50%; background: var(--bleu); color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
+
+  /* ── AD DETAIL ── */
+  .ad-detail-img { width: 100%; height: 260px; object-fit: cover; border-radius: 12px; background: var(--gris-mid); display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+  .ad-detail-price { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; color: var(--vert); margin: 12px 0 4px; }
+  .ad-detail-seller { display: flex; align-items: center; gap: 12px; background: var(--gris); padding: 14px; border-radius: 12px; margin-top: 14px; }
+  .seller-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--bleu); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+  .seller-info { flex: 1; }
+  .seller-name { font-weight: 600; font-size: 0.92rem; }
+  .seller-since { font-size: 0.78rem; color: var(--gris-text); }
+
+  /* ── MESSAGING ── */
+  .messages-layout { display: flex; gap: 0; height: 480px; }
+  .conv-list { width: 200px; border-right: 1.5px solid var(--gris-mid); overflow-y: auto; flex-shrink: 0; }
+  .conv-item { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid var(--gris-mid); transition: background .15s; }
+  .conv-item:hover, .conv-item.active { background: var(--vert-light); }
+  .conv-item .conv-name { font-weight: 600; font-size: 0.87rem; }
+  .conv-item .conv-preview { font-size: 0.77rem; color: var(--gris-text); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conv-unread { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--vert); margin-left: 6px; }
+  .chat-area { flex: 1; display: flex; flex-direction: column; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .chat-msg { max-width: 72%; }
+  .chat-msg.sent { align-self: flex-end; }
+  .chat-msg.recv { align-self: flex-start; }
+  .chat-bubble { padding: 9px 13px; border-radius: 14px; font-size: 0.87rem; line-height: 1.45; }
+  .chat-msg.sent .chat-bubble { background: var(--bleu); color: white; border-bottom-right-radius: 3px; }
+  .chat-msg.recv .chat-bubble { background: var(--gris); color: var(--noir); border-bottom-left-radius: 3px; }
+  .chat-time { font-size: 0.72rem; color: var(--gris-text); margin-top: 3px; text-align: right; }
+  .chat-input-area { padding: 12px 14px; border-top: 1.5px solid var(--gris-mid); display: flex; gap: 8px; }
+  .chat-input-area input { flex: 1; border: 1.5px solid var(--gris-mid); border-radius: 50px; padding: 9px 16px; font-family: 'DM Sans', sans-serif; font-size: 0.87rem; }
+  .chat-input-area input:focus { outline: none; border-color: var(--vert); }
+
+  /* ── TOAST ── */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--bleu); color: white; padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; z-index: 500; box-shadow: var(--shadow); animation: toastIn .3s ease; display: none; }
+  .toast.show { display: block; }
+  @keyframes toastIn { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+
+  /* ── AUTH ── */
+  .auth-tabs { display: flex; background: var(--gris); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+  .auth-tab { flex: 1; text-align: center; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 500; transition: all .15s; }
+  .auth-tab.active { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: var(--bleu); font-weight: 600; }
+
+  /* ── PROFILE ── */
+  .profile-header { background: linear-gradient(135deg, var(--bleu), #001f5c); color: white; padding: 20px; border-radius: 12px; margin-bottom: 16px; }
+  .profile-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--jaune); color: var(--bleu); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; margin-bottom: 10px; }
+  .profile-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; }
+  .profile-email { font-size: 0.8rem; opacity: 0.8; }
+
+  /* ── NO ADS ── */
+  .no-ads { text-align: center; padding: 48px 20px; }
+  .no-ads p { color: var(--gris-text); margin-top: 10px; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:768px) {
+    .header-top { flex-wrap: wrap; }
+    .search-bar { order: 3; max-width: 100%; }
+    .sidebar { display: none; }
+    .main { padding: 16px; }
+    .hero h1 { font-size: 1.5rem; }
+    .hero-stats { gap: 20px; }
+    .form-row { grid-template-columns: 1fr; }
+    .messages-layout { flex-direction: column; height: auto; }
+    .conv-list { width: 100%; border-right: none; border-bottom: 1.5px solid var(--gris-mid); height: 140px; }
+    .chat-area { min-height: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">
+    <a class="logo" href="#" onclick="showSection('home')">
+      <div class="logo-flag">
+        <span style="background:var(--vert)"></span>
+        <span style="background:var(--jaune)"></span>
+        <span style="background:var(--bleu)"></span>
+      </div>
+      <div>
+        <div class="logo-text">Gabon<span>Coin</span></div>
+        <div class="logo-sub">Petites Annonces</div>
+      </div>
+    </a>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Chercher une annonce... ex: iPhone, Moto, Maison">
+      <button onclick="doSearch()">🔍</button>
+    </div>
+    <div class="header-actions" id="headerActions">
+      <button class="btn btn-outline" onclick="openModal('modalAuth')">Connexion</button>
+      <button class="btn btn-yellow" onclick="openModal('modalPost')">+ Publier</button>
+    </div>
+  </div>
+  <nav class="nav-tabs" id="navTabs">
+    <!-- Populated by JS -->
+  </nav>
+</header>
+
+<!-- HERO -->
+<div class="hero" id="heroSection">
+  <h1>🇬🇦 Le marché de référence au Gabon</h1>
+  <p>Achetez, vendez, échangez — entre Gabonais, partout au Gabon</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><strong id="statAds">0</strong><span>annonces</span></div>
+    <div class="hero-stat"><strong id="statUsers">0</strong><span>membres</span></div>
+    <div class="hero-stat"><strong id="statCities">9</strong><span>villes</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainContent">
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h3>Localisation</h3>
+      <div class="filter-item active" onclick="filterCity(this,'')">🌍 Tout le Gabon <span class="count" id="cityAll">0</span></div>
+      <div class="filter-item" onclick="filterCity(this,'Libreville')">🏙️ Libreville <span class="count" id="cityLib">0</span></div>
+      <div class="filter-item" onclick="filterCity(this,'Port-Gentil')">⚓ Port-Gentil <span class="count" id="cityPG">0</span></div>
+      <div class="filter-item" onclick="filterCity(this,'Franceville')">🏔️ Franceville <span class="count" id="cityFV">0</span></div>
+      <div class="filter-item" onclick="filterCity(this,'Oyem')">🌿 Oyem <span class="count" id="cityOY">0</span></div>
+      <div class="filter-item" onclick="filterCity(this,'Lambaréné')">🌊 Lambaréné <span class="count" id="cityLB">0</span></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Prix (FCFA)</h3>
+      <div class="price-range">
+        <div class="price-row">
+          <input type="number" id="priceMin" placeholder="Min" oninput="renderAds()">
+          <input type="number" id="priceMax" placeholder="Max" oninput="renderAds()">
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-card" id="loggedSidebar" style="display:none">
+      <h3>Mon espace</h3>
+      <div class="filter-item" onclick="openModal('modalProfile')">👤 Mon profil</div>
+      <div class="filter-item" onclick="openModal('modalMessages')">💬 Messages <span class="count" id="msgCount">2</span></div>
+      <div class="filter-item" onclick="openModal('modalMyAds')">📋 Mes annonces</div>
+    </div>
+  </aside>
+  <section class="content">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="results-count" id="resultsCount">0 annonces</span>
+      </div>
+      <select class="sort-select" onchange="renderAds()">
+        <option value="recent">Plus récentes</option>
+        <option value="price_asc">Prix croissant</option>
+        <option value="price_desc">Prix décroissant</option>
+      </select>
+    </div>
+    <div class="ads-grid" id="adsGrid"></div>
+  </section>
+</div>
+
+<!-- ═══════════ MODAL: POST AD ═══════════ -->
+<div class="modal-overlay hidden" id="modalPost">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📢 Publier une annonce</h2>
+      <button class="modal-close" onclick="closeModal('modalPost')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Titre de l'annonce *</label>
+        <input type="text" id="postTitle" placeholder="Ex: iPhone 13 Pro Max 256Go">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Catégorie *</label>
+          <select id="postCategory"></select>
+        </div>
+        <div class="form-group">
+          <label>Ville *</label>
+          <select id="postCity">
+            <option>Libreville</option><option>Port-Gentil</option><option>Franceville</option>
+            <option>Oyem</option><option>Lambaréné</option><option>Moanda</option>
+            <option>Tchibanga</option><option>Koula-Moutou</option><option>Makokou</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prix (FCFA) *</label>
+          <input type="number" id="postPrice" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>État</label>
+          <select id="postCondition">
+            <option value="Neuf">Neuf</option>
+            <option value="Très bon état">Très bon état</option>
+            <option value="Bon état">Bon état</option>
+            <option value="Occasion">Occasion</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea id="postDesc" placeholder="Décrivez votre article en détail..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Photo (emoji pour la démo)</label>
+        <select id="postEmoji">
+          <option value="📱">📱 Téléphone</option>
+          <option value="🚗">🚗 Voiture</option>
+          <option value="🏠">🏠 Immobilier</option>
+          <option value="💻">💻 Ordinateur</option>
+          <option value="👕">👕 Vêtements</option>
+          <option value="🛋️">🛋️ Meuble</option>
+          <option value="🏍️">🏍️ Moto</option>
+          <option value="📺">📺 TV / Électro</option>
+          <option value="🌾">🌾 Agriculture</option>
+          <option value="💎">💎 Bijou</option>
+          <option value="🎸">🎸 Musique</option>
+          <option value="🧸">🧸 Jouet</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalPost')">Annuler</button>
+      <button class="btn btn-green" onclick="submitAd()">Publier l'annonce</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: AD DETAIL ═══════════ -->
+<div class="modal-overlay hidden" id="modalDetail">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2 id="detailTitle">Détail annonce</h2>
+      <button class="modal-close" onclick="closeModal('modalDetail')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ad-detail-img" id="detailImg"></div>
+      <div class="ad-detail-price" id="detailPrice"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <span id="detailCat" style="background:var(--bleu-light);color:var(--bleu);padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
+        <span id="detailCity" style="background:var(--vert-light);color:var(--vert-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
+        <span id="detailCond" style="background:#fff8e1;color:#e65100;padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
+      </div>
+      <p id="detailDesc" style="font-size:0.92rem;line-height:1.6;color:#444"></p>
+      <div class="ad-detail-seller" id="detailSeller"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalDetail')">Fermer</button>
+      <button class="btn btn-yellow" id="detailContact" onclick="">💬 Contacter le vendeur</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: AUTH ═══════════ -->
+<div class="modal-overlay hidden" id="modalAuth">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🇬🇦 Mon compte</h2>
+      <button class="modal-close" onclick="closeModal('modalAuth')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login',this)">Se connecter</div>
+        <div class="auth-tab" onclick="switchAuthTab('register',this)">S'inscrire</div>
+      </div>
+      <div id="authLogin">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="votremail@email.com">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="loginPass" placeholder="••••••••">
+        </div>
+        <p class="form-hint" style="margin-bottom:10px">Compte admin : <strong>admin@gaboncoin.ga</strong> / <strong>admin123</strong></p>
+        <button class="btn btn-green" style="width:100%" onclick="doLogin()">Se connecter</button>
+      </div>
+      <div id="authRegister" style="display:none">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Prénom</label>
+            <input type="text" id="regFirst" placeholder="Jean">
+          </div>
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" id="regLast" placeholder="Nguema">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="votremail@email.com">
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" id="regPhone" placeholder="+241 00 00 00 00">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="regPass" placeholder="••••••••">
+        </div>
+        <button class="btn btn-green" style="width:100%" onclick="doRegister()">Créer mon compte</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: MESSAGES ═══════════ -->
+<div class="modal-overlay hidden" id="modalMessages">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2>💬 Messagerie</h2>
+      <button class="modal-close" onclick="closeModal('modalMessages')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div class="messages-layout">
+        <div class="conv-list" id="convList"></div>
+        <div class="chat-area">
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Écrire un message..." onkeydown="if(event.key==='Enter')sendMessage()">
+            <button class="btn btn-green btn-sm" onclick="sendMessage()">Envoyer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: PROFILE ═══════════ -->
+<div class="modal-overlay hidden" id="modalProfile">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>👤 Mon profil</h2>
+      <button class="modal-close" onclick="closeModal('modalProfile')">✕</button>
+    </div>
+    <div class="modal-body" id="profileBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="doLogout()">Se déconnecter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: MY ADS ═══════════ -->
+<div class="modal-overlay hidden" id="modalMyAds">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2>📋 Mes annonces</h2>
+      <button class="modal-close" onclick="closeModal('modalMyAds')">✕</button>
+    </div>
+    <div class="modal-body" id="myAdsBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: ADMIN ═══════════ -->
+<div class="modal-overlay hidden" id="modalAdmin">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2>⚙️ Panneau d'administration</h2>
+      <button class="modal-close" onclick="closeModal('modalAdmin')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="admin-tabs">
+        <div class="admin-tab active" onclick="switchAdminTab('cats',this)">📂 Catégories</div>
+        <div class="admin-tab" onclick="switchAdminTab('ads',this)">📢 Annonces</div>
+        <div class="admin-tab" onclick="switchAdminTab('users',this)">👥 Utilisateurs</div>
+        <div class="admin-tab" onclick="switchAdminTab('settings',this)">🎨 Apparence</div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="admin-section active" id="adminCats">
+        <p style="font-size:0.85rem;color:var(--gris-text);margin-bottom:14px">Glissez pour réordonner. Les changements sont visibles immédiatement.</p>
+        <ul class="category-list" id="adminCatList"></ul>
+        <div class="add-cat-form">
+          <input type="text" id="newCatIcon" placeholder="Emoji 🏠" maxlength="4" style="width:70px;flex:none">
+          <input type="text" id="newCatName" placeholder="Nom de la catégorie">
+          <button class="btn btn-green btn-sm" onclick="addCategory()">+ Ajouter</button>
+        </div>
+      </div>
+
+      <!-- ADS MANAGEMENT -->
+      <div class="admin-section" id="adminAds">
+        <table class="ads-table">
+          <thead><tr><th>Annonce</th><th>Auteur</th><th>Prix</th><th>Ville</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="adminAdsBody"></tbody>
+        </table>
+      </div>
+
+      <!-- USERS -->
+      <div class="admin-section" id="adminUsers">
+        <table class="users-table">
+          <thead><tr><th>Utilisateur</th><th>Email</th><th>Annonces</th><th>Inscrit le</th><th>Actions</th></tr></thead>
+          <tbody id="adminUsersBody"></tbody>
+        </table>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="admin-section" id="adminSettings">
+        <div class="form-group">
+          <label>Nom du site</label>
+          <input type="text" id="settingSiteName" value="GabonCoin">
+        </div>
+        <div class="form-group">
+          <label>Slogan</label>
+          <input type="text" id="settingSlogan" value="Le marché de référence au Gabon">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Couleur principale</label>
+            <input type="color" id="settingColorPrimary" value="#009e60" style="height:42px;padding:4px">
+          </div>
+          <div class="form-group">
+            <label>Couleur secondaire</label>
+            <input type="color" id="settingColorSecondary" value="#003082" style="height:42px;padding:4px">
+          </div>
+        </div>
+        <button class="btn btn-green" onclick="applySettings()">Appliquer les changements</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let state = JSON.parse(localStorage.getItem('gaboncoin') || 'null') || {
+  categories: [
+    {id:1, icon:'📱', name:'Téléphones & Tablettes'},
+    {id:2, icon:'🚗', name:'Véhicules'},
+    {id:3, icon:'🏠', name:'Immobilier'},
+    {id:4, icon:'💻', name:'Informatique'},
+    {id:5, icon:'👕', name:'Mode & Beauté'},
+    {id:6, icon:'🛋️', name:'Maison & Jardin'},
+    {id:7, icon:'🌾', name:'Agriculture'},
+    {id:8, icon:'💼', name:'Emploi & Services'},
+    {id:9, icon:'🎸', name:'Loisirs & Sport'},
+  ],
+  ads: [
+    {id:1,title:"iPhone 13 Pro Max 256Go",price:350000,category:1,city:"Libreville",condition:"Très bon état",desc:"iPhone en parfait état, débloqué tous opérateurs. Batterie 89%. Vendu avec chargeur original.",emoji:"📱",author:"Jean Nguema",authorId:2,date:"2024-01-15",active:true},
+    {id:2,title:"Toyota Corolla 2018 essence",price:8500000,category:2,city:"Port-Gentil",condition:"Bon état",desc:"Voiture bien entretenue, CT valide. Kilométrage : 87 000 km. Couleur blanche.",emoji:"🚗",author:"Marie Obame",authorId:3,date:"2024-01-14",active:true},
+    {id:3,title:"Appartement F3 Batterie 4",price:280000,category:3,city:"Libreville",condition:"Bon état",desc:"Bel appartement de 3 pièces, sécurisé, parking, gardien. Loyer mensuel.",emoji:"🏠",author:"Pierre Mba",authorId:4,date:"2024-01-13",active:true},
+    {id:4,title:"MacBook Pro M1 2021",price:900000,category:4,city:"Libreville",condition:"Très bon état",desc:"MacBook Pro 13 pouces, puce M1, 8Go RAM, 256Go SSD. Peu utilisé.",emoji:"💻",author:"Sophie Ekomo",authorId:5,date:"2024-01-12",active:true},
+    {id:5,title:"Robe traditionnelle wax",price:45000,category:5,city:"Franceville",condition:"Neuf",desc:"Magnifique robe en tissu wax gabonais. Taille 38/40. Jamais portée.",emoji:"👕",author:"Aline Mouele",authorId:6,date:"2024-01-11",active:true},
+    {id:6,title:"Moto Yamaha R15 2020",price:1200000,category:2,city:"Oyem",condition:"Bon état",desc:"Moto sportive en excellent état, entretien régulier. Documents à jour.",emoji:"🏍️",author:"Eric Nzamba",authorId:7,date:"2024-01-10",active:true},
+    {id:7,title:"Canapé 3 places velours",price:120000,category:6,city:"Libreville",condition:"Très bon état",desc:"Canapé luxueux couleur gris anthracite, très confortable. Acheté il y a 1 an.",emoji:"🛋️",author:"Jean Nguema",authorId:2,date:"2024-01-09",active:true},
+    {id:8,title:"Terrain 500m² à Nkembo",price:25000000,category:3,city:"Libreville",condition:"Neuf",desc:"Beau terrain viabilisé, titre foncier disponible, zone résidentielle calme.",emoji:"🌳",author:"Rémy Assoumou",authorId:8,date:"2024-01-08",active:true},
+  ],
+  users: [
+    {id:1,firstName:"Admin",lastName:"GabonCoin",email:"admin@gaboncoin.ga",pass:"admin123",phone:"+241 00 00 00 00",date:"2023-01-01",isAdmin:true},
+    {id:2,firstName:"Jean",lastName:"Nguema",email:"jean@email.ga",pass:"pass123",phone:"+241 06 11 22 33",date:"2023-03-15",isAdmin:false},
+    {id:3,firstName:"Marie",lastName:"Obame",email:"marie@email.ga",pass:"pass123",phone:"+241 07 44 55 66",date:"2023-05-20",isAdmin:false},
+  ],
+  messages: [
+    {id:1,from:2,to:1,adId:1,text:"Bonjour, est-ce que le téléphone est encore disponible ?",date:"2024-01-15T10:30:00"},
+    {id:2,from:1,to:2,adId:1,text:"Oui, toujours disponible !",date:"2024-01-15T10:45:00"},
+    {id:3,from:3,to:1,adId:2,text:"Quel est le kilométrage exact de la voiture ?",date:"2024-01-14T14:00:00"},
+  ],
+  currentUser: null,
+  activeCategory: null,
+  activeCity: null,
+};
+
+function save() { localStorage.setItem('gaboncoin', JSON.stringify(state)); }
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+function init() {
+  renderNav();
+  renderAds();
+  updateStats();
+  updateHeader();
+}
+
+// ═══════════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════════
+function renderNav() {
+  const nav = document.getElementById('navTabs');
+  let html = `<div class="nav-tab ${!state.activeCategory?'active':''}" onclick="filterCategory(null,this)"><span class="tab-icon">🏷️</span>Toutes</div>`;
+  state.categories.forEach(cat => {
+    html += `<div class="nav-tab ${state.activeCategory===cat.id?'active':''}" onclick="filterCategory(${cat.id},this)"><span class="tab-icon">${cat.icon}</span>${cat.name}</div>`;
+  });
+  if(state.currentUser?.isAdmin) {
+    html += `<div class="nav-tab" onclick="openAdminPanel()" style="margin-left:auto;color:var(--jaune)"><span class="tab-icon">⚙️</span>Admin</div>`;
+  }
+  nav.innerHTML = html;
+}
+
+function filterCategory(catId, el) {
+  state.activeCategory = catId;
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderAds();
+}
+
+function filterCity(el, city) {
+  state.activeCity = city || null;
+  document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  renderAds();
+}
+
+// ═══════════════════════════════════════════════════
+//  ADS
+// ═══════════════════════════════════════════════════
+function getFilteredAds() {
+  let ads = state.ads.filter(a => a.active);
+  if(state.activeCategory) ads = ads.filter(a => a.category === state.activeCategory);
+  if(state.activeCity) ads = ads.filter(a => a.city === state.activeCity);
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  if(search) ads = ads.filter(a => a.title.toLowerCase().includes(search) || a.desc.toLowerCase().includes(search));
+  const pMin = parseInt(document.getElementById('priceMin').value) || 0;
+  const pMax = parseInt(document.getElementById('priceMax').value) || Infinity;
+  ads = ads.filter(a => a.price >= pMin && a.price <= pMax);
+  const sort = document.querySelector('.sort-select')?.value || 'recent';
+  if(sort === 'price_asc') ads.sort((a,b)=>a.price-b.price);
+  else if(sort === 'price_desc') ads.sort((a,b)=>b.price-a.price);
+  else ads.sort((a,b)=>b.id-a.id);
+  return ads;
+}
+
+function renderAds() {
+  const ads = getFilteredAds();
+  const grid = document.getElementById('adsGrid');
+  document.getElementById('resultsCount').textContent = `${ads.length} annonce${ads.length>1?'s':''}`;
+  if(!ads.length) {
+    grid.innerHTML = `<div class="no-ads" style="grid-column:1/-1"><div style="font-size:3rem">🔍</div><p>Aucune annonce trouvée</p></div>`;
+    return;
+  }
+  grid.innerHTML = ads.map(ad => `
+    <div class="ad-card" onclick="openDetail(${ad.id})">
+      ${ad.date && new Date(ad.date) > new Date(Date.now()-3*86400000) ? '<div class="ad-badge">Nouveau</div>' : ''}
+      <button class="ad-fav" onclick="event.stopPropagation();toggleFav(this)">🤍</button>
+      <div class="ad-img">${ad.emoji}</div>
+      <div class="ad-body">
+        <div class="ad-title">${ad.title}</div>
+        <div class="ad-price">${formatPrice(ad.price)} <span>FCFA</span></div>
+        <div class="ad-meta">
+          <i>📍 ${ad.city}</i>
+          <i>🏷️ ${getCatName(ad.category)}</i>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  updateStats();
+  updateCityCounts();
+}
+
+function toggleFav(btn) {
+  btn.textContent = btn.textContent === '🤍' ? '❤️' : '🤍';
+}
+
+function doSearch() { renderAds(); }
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+});
+
+function getCatName(id) {
+  const c = state.categories.find(c=>c.id===id);
+  return c ? c.icon+' '+c.name : 'Autre';
+}
+function formatPrice(p) { return p.toLocaleString('fr-FR'); }
+
+function updateStats() {
+  document.getElementById('statAds').textContent = state.ads.filter(a=>a.active).length;
+  document.getElementById('statUsers').textContent = state.users.length;
+}
+function updateCityCounts() {
+  const ads = state.ads.filter(a=>a.active);
+  const cities = {'':{el:'cityAll'},Libreville:{el:'cityLib'},'Port-Gentil':{el:'cityPG'},Franceville:{el:'cityFV'},Oyem:{el:'cityOY'},'Lambaréné':{el:'cityLB'}};
+  for(let [city,cfg] of Object.entries(cities)) {
+    const el = document.getElementById(cfg.el);
+    if(el) el.textContent = city ? ads.filter(a=>a.city===city).length : ads.length;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  AD DETAIL
+// ═══════════════════════════════════════════════════
+function openDetail(id) {
+  const ad = state.ads.find(a=>a.id===id);
+  if(!ad) return;
+  document.getElementById('detailTitle').textContent = ad.title;
+  document.getElementById('detailImg').textContent = ad.emoji;
+  document.getElementById('detailPrice').textContent = formatPrice(ad.price) + ' FCFA';
+  document.getElementById('detailCat').textContent = getCatName(ad.category);
+  document.getElementById('detailCity').textContent = '📍 ' + ad.city;
+  document.getElementById('detailCond').textContent = ad.condition;
+  document.getElementById('detailDesc').textContent = ad.desc;
+  document.getElementById('detailSeller').innerHTML = `
+    <div class="seller-avatar">${ad.author[0]}</div>
+    <div class="seller-info">
+      <div class="seller-name">${ad.author}</div>
+      <div class="seller-since">Vendeur depuis 2023</div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="openModal('modalMessages')">💬</button>
+  `;
+  const contactBtn = document.getElementById('detailContact');
+  contactBtn.onclick = () => { closeModal('modalDetail'); openContactMessage(ad); };
+  openModal('modalDetail');
+}
+
+function openContactMessage(ad) {
+  if(!state.currentUser) { openModal('modalAuth'); return; }
+  openModal('modalMessages');
+  renderConvList(ad.authorId);
+}
+
+// ═══════════════════════════════════════════════════
+//  POST AD
+// ═══════════════════════════════════════════════════
+function populateCategorySelect() {
+  const sel = document.getElementById('postCategory');
+  if(!sel) return;
+  sel.innerHTML = state.categories.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+}
+
+function submitAd() {
+  if(!state.currentUser) { closeModal('modalPost'); openModal('modalAuth'); return; }
+  const title = document.getElementById('postTitle').value.trim();
+  const price = parseInt(document.getElementById('postPrice').value);
+  const desc = document.getElementById('postDesc').value.trim();
+  if(!title || !price || !desc) { showToast('⚠️ Veuillez remplir tous les champs obligatoires'); return; }
+  const newAd = {
+    id: Date.now(),
+    title,
+    price,
+    category: parseInt(document.getElementById('postCategory').value),
+    city: document.getElementById('postCity').value,
+    condition: document.getElementById('postCondition').value,
+    desc,
+    emoji: document.getElementById('postEmoji').value,
+    author: state.currentUser.firstName + ' ' + state.currentUser.lastName,
+    authorId: state.currentUser.id,
+    date: new Date().toISOString().split('T')[0],
+    active: true,
+  };
+  state.ads.unshift(newAd);
+  save();
+  closeModal('modalPost');
+  renderAds();
+  document.getElementById('postTitle').value='';
+  document.getElementById('postPrice').value='';
+  document.getElementById('postDesc').value='';
+  showToast('✅ Annonce publiée avec succès !');
+}
+
+// ═══════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════
+function switchAuthTab(tab, el) {
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('authLogin').style.display = tab==='login'?'block':'none';
+  document.getElementById('authRegister').style.display = tab==='register'?'block':'none';
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const user = state.users.find(u=>u.email===email && u.pass===pass);
+  if(!user) { showToast('❌ Email ou mot de passe incorrect'); return; }
+  state.currentUser = user;
+  save();
+  closeModal('modalAuth');
+  updateHeader();
+  renderNav();
+  showToast(`👋 Bienvenue ${user.firstName} !`);
+  document.getElementById('loggedSidebar').style.display = 'block';
+}
+
+function doRegister() {
+  const firstName = document.getElementById('regFirst').value.trim();
+  const lastName = document.getElementById('regLast').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const pass = document.getElementById('regPass').value;
+  if(!firstName||!lastName||!email||!pass) { showToast('⚠️ Remplissez tous les champs'); return; }
+  if(state.users.find(u=>u.email===email)) { showToast('❌ Email déjà utilisé'); return; }
+  const newUser = { id:Date.now(), firstName, lastName, email, pass, phone, date:new Date().toISOString().split('T')[0], isAdmin:false };
+  state.users.push(newUser);
+  state.currentUser = newUser;
+  save();
+  closeModal('modalAuth');
+  updateHeader();
+  renderNav();
+  showToast(`🎉 Compte créé ! Bienvenue ${firstName} !`);
+  document.getElementById('loggedSidebar').style.display = 'block';
+}
+
+function doLogout() {
+  state.currentUser = null;
+  save();
+  closeModal('modalProfile');
+  updateHeader();
+  renderNav();
+  document.getElementById('loggedSidebar').style.display = 'none';
+  showToast('À bientôt !');
+}
+
+function updateHeader() {
+  const actions = document.getElementById('headerActions');
+  if(state.currentUser) {
+    actions.innerHTML = `
+      <button class="btn btn-outline" onclick="openModal('modalMessages')">💬 Messages <span style="background:var(--jaune);color:var(--bleu);padding:1px 6px;border-radius:50px;font-size:0.75rem;font-weight:700">${getUnreadCount()}</span></button>
+      <button class="btn btn-outline" onclick="openModal('modalProfile')">${state.currentUser.firstName[0]}${state.currentUser.lastName[0]} ▾</button>
+      <button class="btn btn-yellow" onclick="populateCategorySelect();openModal('modalPost')">+ Publier</button>
+    `;
+    document.getElementById('loggedSidebar').style.display = 'block';
+  } else {
+    actions.innerHTML = `
+      <button class="btn btn-outline" onclick="openModal('modalAuth')">Connexion</button>
+      <button class="btn btn-yellow" onclick="populateCategorySelect();openModal('modalPost')">+ Publier</button>
+    `;
+    document.getElementById('loggedSidebar').style.display = 'none';
+  }
+}
+
+function getUnreadCount() {
+  if(!state.currentUser) return 0;
+  return state.messages.filter(m=>m.to===state.currentUser.id).length;
+}
+
+// ═══════════════════════════════════════════════════
+//  PROFILE
+// ═══════════════════════════════════════════════════
+function openProfileModal() {
+  if(!state.currentUser) { openModal('modalAuth'); return; }
+  const u = state.currentUser;
+  const myAdsCount = state.ads.filter(a=>a.authorId===u.id).length;
+  document.getElementById('profileBody').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar">${u.firstName[0]}${u.lastName[0]}</div>
+      <div class="profile-name">${u.firstName} ${u.lastName}</div>
+      <div class="profile-email">${u.email}</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px">
+      <div style="flex:1;background:var(--vert-light);border-radius:10px;padding:14px;text-align:center">
+        <strong style="font-size:1.4rem;color:var(--vert)">${myAdsCount}</strong>
+        <p style="font-size:0.78rem;color:var(--gris-text)">annonces</p>
+      </div>
+      <div style="flex:1;background:var(--bleu-light);border-radius:10px;padding:14px;text-align:center">
+        <strong style="font-size:1.4rem;color:var(--bleu)">${state.messages.filter(m=>m.from===u.id||m.to===u.id).length}</strong>
+        <p style="font-size:0.78rem;color:var(--gris-text)">messages</p>
+      </div>
+    </div>
+    <div class="form-group"><label>Téléphone</label><input type="tel" value="${u.phone||''}" placeholder="+241 ..."></div>
+    ${u.isAdmin?`<div style="background:#fff8e1;padding:12px;border-radius:10px;text-align:center;margin-top:10px">
+      <strong>👑 Compte Administrateur</strong><br>
+      <button class="btn btn-green btn-sm" style="margin-top:8px" onclick="closeModal('modalProfile');openAdminPanel()">Ouvrir le panneau admin</button>
+    </div>`:''}
+  `;
+  openModal('modalProfile');
+}
+
+// ═══════════════════════════════════════════════════
+//  MY ADS
+// ═══════════════════════════════════════════════════
+function openMyAds() {
+  if(!state.currentUser) { openModal('modalAuth'); return; }
+  const myAds = state.ads.filter(a=>a.authorId===state.currentUser.id);
+  if(!myAds.length) {
+    document.getElementById('myAdsBody').innerHTML = `<div class="no-ads"><div style="font-size:3rem">📋</div><p>Vous n'avez pas encore d'annonces</p></div>`;
+  } else {
+    document.getElementById('myAdsBody').innerHTML = `
+      <table class="ads-table">
+        <thead><tr><th>Annonce</th><th>Prix</th><th>Ville</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${myAds.map(ad=>`
+          <tr>
+            <td><strong>${ad.emoji} ${ad.title}</strong></td>
+            <td>${formatPrice(ad.price)} FCFA</td>
+            <td>${ad.city}</td>
+            <td><span class="status-badge ${ad.active?'status-active':'status-pending'}">${ad.active?'Active':'Inactive'}</span></td>
+            <td><button class="icon-btn danger" onclick="deleteMyAd(${ad.id})">🗑️</button></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>
+    `;
+  }
+  openModal('modalMyAds');
+}
+
+function deleteMyAd(id) {
+  state.ads = state.ads.filter(a=>a.id!==id);
+  save();
+  openMyAds();
+  renderAds();
+  showToast('🗑️ Annonce supprimée');
+}
+
+// ═══════════════════════════════════════════════════
+//  MESSAGING
+// ═══════════════════════════════════════════════════
+let activeConvUserId = null;
+
+function renderConvList(highlightUserId) {
+  if(!state.currentUser) return;
+  const uid = state.currentUser.id;
+  const convPartners = [...new Set(state.messages
+    .filter(m=>m.from===uid||m.to===uid)
+    .map(m=>m.from===uid?m.to:m.from))];
+  const convListEl = document.getElementById('convList');
+  if(!convPartners.length) {
+    convListEl.innerHTML = '<p style="padding:14px;font-size:0.82rem;color:var(--gris-text)">Aucune conversation</p>';
+    return;
+  }
+  convListEl.innerHTML = convPartners.map(pid => {
+    const partner = state.users.find(u=>u.id===pid) || {firstName:'Utilisateur',lastName:'',id:pid};
+    const lastMsg = [...state.messages].filter(m=>(m.from===uid&&m.to===pid)||(m.from===pid&&m.to===uid)).pop();
+    return `<div class="conv-item ${activeConvUserId===pid||highlightUserId===pid?'active':''}" onclick="openConversation(${pid})">
+      <div class="conv-name">${partner.firstName} ${partner.lastName}</div>
+      <div class="conv-preview">${lastMsg?lastMsg.text:'...'}</div>
+    </div>`;
+  }).join('');
+  if(highlightUserId) openConversation(highlightUserId);
+  else if(convPartners.length) openConversation(convPartners[0]);
+}
+
+function openConversation(partnerId) {
+  activeConvUserId = partnerId;
+  const uid = state.currentUser.id;
+  const msgs = state.messages.filter(m=>(m.from===uid&&m.to===partnerId)||(m.from===partnerId&&m.to===uid));
+  const chatEl = document.getElementById('chatMessages');
+  if(!msgs.length) { chatEl.innerHTML = '<p style="text-align:center;color:var(--gris-text);padding:20px;font-size:0.85rem">Démarrez la conversation !</p>'; return; }
+  chatEl.innerHTML = msgs.map(m=>`
+    <div class="chat-msg ${m.from===uid?'sent':'recv'}">
+      <div class="chat-bubble">${m.text}</div>
+      <div class="chat-time">${new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>
+    </div>
+  `).join('');
+  chatEl.scrollTop = chatEl.scrollHeight;
+  renderConvList();
+}
+
+function sendMessage() {
+  if(!state.currentUser||!activeConvUserId) return;
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  state.messages.push({id:Date.now(),from:state.currentUser.id,to:activeConvUserId,text,date:new Date().toISOString()});
+  save();
+  input.value = '';
+  openConversation(activeConvUserId);
+}
+
+// ═══════════════════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════════════════
+function openAdminPanel() {
+  if(!state.currentUser?.isAdmin) { showToast('❌ Accès réservé aux administrateurs'); return; }
+  renderAdminCategories();
+  renderAdminAds();
+  renderAdminUsers();
+  openModal('modalAdmin');
+}
+
+function switchAdminTab(tab, el) {
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('admin'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+}
+
+function renderAdminCategories() {
+  const list = document.getElementById('adminCatList');
+  list.innerHTML = state.categories.map(cat=>`
+    <li class="category-item" data-id="${cat.id}">
+      <span class="drag-handle">⠿</span>
+      <span class="cat-icon">${cat.icon}</span>
+      <span class="cat-name">${cat.name}</span>
+      <div class="cat-actions">
+        <button class="icon-btn danger" onclick="deleteCategory(${cat.id})">🗑️</button>
+      </div>
+    </li>
+  `).join('');
+}
+
+function addCategory() {
+  const icon = document.getElementById('newCatIcon').value.trim() || '📦';
+  const name = document.getElementById('newCatName').value.trim();
+  if(!name) { showToast('⚠️ Entrez un nom de catégorie'); return; }
+  state.categories.push({id:Date.now(), icon, name});
+  save();
+  document.getElementById('newCatIcon').value='';
+  document.getElementById('newCatName').value='';
+  renderAdminCategories();
+  renderNav();
+  populateCategorySelect();
+  showToast('✅ Catégorie ajoutée !');
+}
+
+function deleteCategory(id) {
+  if(state.ads.some(a=>a.category===id)) { showToast('⚠️ Des annonces utilisent cette catégorie'); return; }
+  state.categories = state.categories.filter(c=>c.id!==id);
+  save();
+  renderAdminCategories();
+  renderNav();
+  showToast('🗑️ Catégorie supprimée');
+}
+
+function renderAdminAds() {
+  document.getElementById('adminAdsBody').innerHTML = state.ads.map(ad=>`
+    <tr>
+      <td><strong>${ad.emoji} ${ad.title}</strong></td>
+      <td>${ad.author}</td>
+      <td>${formatPrice(ad.price)} FCFA</td>
+      <td>${ad.city}</td>
+      <td><span class="status-badge ${ad.active?'status-active':'status-pending'}">${ad.active?'Active':'Désactivée'}</span></td>
+      <td>
+        <button class="icon-btn" onclick="toggleAdStatus(${ad.id})">${ad.active?'🔴':'🟢'}</button>
+        <button class="icon-btn danger" onclick="adminDeleteAd(${ad.id})">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function toggleAdStatus(id) {
+  const ad = state.ads.find(a=>a.id===id);
+  if(ad) { ad.active=!ad.active; save(); renderAdminAds(); renderAds(); }
+}
+
+function adminDeleteAd(id) {
+  state.ads = state.ads.filter(a=>a.id!==id);
+  save();
+  renderAdminAds();
+  renderAds();
+  showToast('🗑️ Annonce supprimée');
+}
+
+function renderAdminUsers() {
+  document.getElementById('adminUsersBody').innerHTML = state.users.map(u=>`
+    <tr>
+      <td><div class="avatar-sm">${u.firstName[0]}${u.lastName[0]}</div> ${u.firstName} ${u.lastName} ${u.isAdmin?'👑':''}</td>
+      <td>${u.email}</td>
+      <td>${state.ads.filter(a=>a.authorId===u.id).length}</td>
+      <td>${u.date}</td>
+      <td>${!u.isAdmin?`<button class="icon-btn danger" onclick="adminDeleteUser(${u.id})">🗑️</button>`:'—'}</td>
+    </tr>
+  `).join('');
+}
+
+function adminDeleteUser(id) {
+  if(id===state.currentUser?.id) { showToast('❌ Vous ne pouvez pas supprimer votre compte'); return; }
+  state.users = state.users.filter(u=>u.id!==id);
+  save();
+  renderAdminUsers();
+  showToast('🗑️ Utilisateur supprimé');
+}
+
+function applySettings() {
+  const name = document.getElementById('settingSiteName').value;
+  const slogan = document.getElementById('settingSlogan').value;
+  const c1 = document.getElementById('settingColorPrimary').value;
+  const c2 = document.getElementById('settingColorSecondary').value;
+  document.documentElement.style.setProperty('--vert', c1);
+  document.documentElement.style.setProperty('--vert-dark', c1+'cc');
+  document.documentElement.style.setProperty('--bleu', c2);
+  document.querySelector('.logo-text').innerHTML = name.slice(0,-4)+'<span>'+name.slice(-4)+'</span>';
+  document.querySelector('.hero h1').textContent = '🇬🇦 '+slogan;
+  showToast('✅ Apparence mise à jour !');
+}
+
+// ═══════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════
+function openModal(id) {
+  if(id==='modalPost') populateCategorySelect();
+  if(id==='modalProfile') { openProfileModal(); return; }
+  if(id==='modalMyAds') { openMyAds(); return; }
+  if(id==='modalMessages') {
+    document.getElementById(id).classList.remove('hidden');
+    renderConvList();
+    return;
+  }
+  document.getElementById(id).classList.remove('hidden');
+}
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o) o.classList.add('hidden'); });
+});
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════
+//  START
+// ═══════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
