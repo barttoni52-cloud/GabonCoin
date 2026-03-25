@@ -806,12 +806,16 @@ onAuthStateChanged(auth, async (firebaseUser) => {
 //  FIREBASE — ANNONCES (lecture temps réel)
 // ═══════════════════════════════════════════════════
 function listenAds() {
-  const q = query(collection(db, 'annonces'), orderBy('date', 'desc'));
-  onSnapshot(q, (snapshot) => {
-    state.ads = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+  // On écoute sans orderBy pour éviter les erreurs d'index manquant
+  // Le tri se fait côté client dans getFilteredAds()
+  onSnapshot(collection(db, 'annonces'), (snapshot) => {
+    state.ads = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     renderAds();
     updateStats();
     updateCityCounts();
+  }, (err) => {
+    console.error('Erreur lecture annonces:', err.message);
+    showToast('⚠️ Impossible de charger les annonces. Vérifiez votre connexion.');
   });
 }
 
@@ -877,10 +881,8 @@ function init() {
 }
 
 // ═══════════════════════════════════════════════════
-//  EXPOSE FUNCTIONS TO GLOBAL SCOPE (needed for onclick handlers)
+//  EXPOSE ALL TO GLOBAL (onclick handlers)
 // ═══════════════════════════════════════════════════
-window.state = state;
-window.saveLocal = saveLocal;
 
 // ═══════════════════════════════════════════════════
 //  NAV
@@ -925,9 +927,9 @@ function getFilteredAds() {
   const pMax = parseInt(document.getElementById('priceMax').value) || Infinity;
   ads = ads.filter(a => a.price >= pMin && a.price <= pMax);
   const sort = document.querySelector('.sort-select')?.value || 'recent';
-  if(sort === 'price_asc') ads.sort((a,b)=>a.price-b.price);
-  else if(sort === 'price_desc') ads.sort((a,b)=>b.price-a.price);
-  else ads.sort((a,b)=>b.id-a.id);
+  if(sort === 'price_asc') ads.sort((a,b) => a.price - b.price);
+  else if(sort === 'price_desc') ads.sort((a,b) => b.price - a.price);
+  else ads.sort((a,b) => (b.date || '').localeCompare(a.date || '')); // tri par date décroissante
   return ads;
 }
 
@@ -1754,16 +1756,20 @@ function applySettings() {
 //  MODALS
 // ═══════════════════════════════════════════════════
 function openModal(id) {
-  if(id==='modalPost') populateCategorySelect();
-  if(id==='modalProfile') { openProfileModal(); return; }
-  if(id==='modalMyAds') { openMyAds(); return; }
-  if(id==='modalMessages') {
-    if(!state.currentUser) { openModal('modalAuth'); return; }
+  if(id === 'modalPost') populateCategorySelect();
+  if(id === 'modalProfile') { openProfileModal(); return; }
+  if(id === 'modalMyAds')   { openMyAds(); return; }
+  if(id === 'modalMessages') {
+    if(!state.currentUser) {
+      document.getElementById('modalAuth').classList.remove('hidden');
+      return;
+    }
     document.getElementById(id).classList.remove('hidden');
     renderConvList(null);
     return;
   }
-  document.getElementById(id).classList.remove('hidden');
+  const el = document.getElementById(id);
+  if(el) el.classList.remove('hidden');
 }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 document.querySelectorAll('.modal-overlay').forEach(o => {
@@ -1791,4 +1797,16 @@ Object.assign(window, {
   openAdminPanel, switchAdminTab, addCategory, deleteCategory,
   toggleAdStatus, adminDeleteAd, adminDeleteUser, applySettings,
   renderConvList, openConversation, sendMessage, openContactMessage,
-  openProfileModal, saveP
+  openProfileModal, saveProfile, openMyAds, deleteMyAd, toggleFav, showToast,
+  renderAdminCategories, renderAdminAds, renderAdminUsers,
+  galleryNav, galleryGoTo, openLightbox, closeLightbox, lbNav, lbGoTo
+});
+
+// ═══════════════════════════════════════════════════
+//  START
+// ═══════════════════════════════════════════════════
+init();
+
+</script>
+</body>
+</html>
