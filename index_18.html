@@ -189,6 +189,28 @@
   .upload-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .upload-preview { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; border: 2px solid var(--gris-mid); }
 
+  /* ── PHOTO SLOTS ── */
+  .photo-slot {
+    position: relative; border: 2px dashed var(--gris-mid); border-radius: 12px;
+    height: 120px; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--gris); transition: border-color .2s, background .2s;
+  }
+  .photo-slot:hover { border-color: var(--vert); background: var(--vert-light); }
+  .photo-slot.has-photo { border: 2px solid var(--vert); border-style: solid; }
+  .slot-empty { text-align: center; color: var(--gris-text); font-size: 1.4rem; pointer-events: none; }
+  .slot-empty span { display: block; font-size: 0.75rem; margin-top: 4px; }
+  .slot-img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+  .slot-del {
+    display: none; position: absolute; top: 5px; right: 5px;
+    background: rgba(0,0,0,0.6); color: white; border: none;
+    border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem;
+    cursor: pointer; align-items: center; justify-content: center;
+    z-index: 5; line-height: 1;
+  }
+  .photo-slot.has-photo .slot-del { display: flex; }
+  .photo-slot.has-photo .slot-empty { display: none; }
+
   /* ── ADMIN PANEL ── */
   .admin-panel { padding: 0; }
   .admin-tabs { display: flex; border-bottom: 2px solid var(--gris-mid); margin-bottom: 20px; }
@@ -436,21 +458,31 @@
         <textarea id="postDesc" placeholder="Décrivez votre article en détail..."></textarea>
       </div>
       <div class="form-group">
-        <label>Photo (emoji pour la démo)</label>
-        <select id="postEmoji">
-          <option value="📱">📱 Téléphone</option>
-          <option value="🚗">🚗 Voiture</option>
-          <option value="🏠">🏠 Immobilier</option>
-          <option value="💻">💻 Ordinateur</option>
-          <option value="👕">👕 Vêtements</option>
-          <option value="🛋️">🛋️ Meuble</option>
-          <option value="🏍️">🏍️ Moto</option>
-          <option value="📺">📺 TV / Électro</option>
-          <option value="🌾">🌾 Agriculture</option>
-          <option value="💎">💎 Bijou</option>
-          <option value="🎸">🎸 Musique</option>
-          <option value="🧸">🧸 Jouet</option>
-        </select>
+        <label>Photos (max 4) — cliquez sur un emplacement pour ajouter une photo</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">
+          <div class="photo-slot" id="slot0" onclick="triggerSlot(0)">
+            <div class="slot-empty">📸<br><span>Photo 1</span></div>
+            <img class="slot-img" style="display:none">
+            <button class="slot-del" onclick="removeSlot(event,0)">✕</button>
+          </div>
+          <div class="photo-slot" id="slot1" onclick="triggerSlot(1)">
+            <div class="slot-empty">📸<br><span>Photo 2</span></div>
+            <img class="slot-img" style="display:none">
+            <button class="slot-del" onclick="removeSlot(event,1)">✕</button>
+          </div>
+          <div class="photo-slot" id="slot2" onclick="triggerSlot(2)">
+            <div class="slot-empty">📸<br><span>Photo 3</span></div>
+            <img class="slot-img" style="display:none">
+            <button class="slot-del" onclick="removeSlot(event,2)">✕</button>
+          </div>
+          <div class="photo-slot" id="slot3" onclick="triggerSlot(3)">
+            <div class="slot-empty">📸<br><span>Photo 4</span></div>
+            <img class="slot-img" style="display:none">
+            <button class="slot-del" onclick="removeSlot(event,3)">✕</button>
+          </div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="loadSlotPhoto(this)">
+        <p class="form-hint" style="margin-top:6px">JPG, PNG — max 5 Mo par photo</p>
       </div>
     </div>
     <div class="modal-footer">
@@ -467,16 +499,31 @@
       <h2 id="detailTitle">Détail annonce</h2>
       <button class="modal-close" onclick="closeModal('modalDetail')">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="ad-detail-img" id="detailImg"></div>
-      <div class="ad-detail-price" id="detailPrice"></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-        <span id="detailCat" style="background:var(--bleu-light);color:var(--bleu);padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
-        <span id="detailCity" style="background:var(--vert-light);color:var(--vert-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
-        <span id="detailCond" style="background:#fff8e1;color:#e65100;padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
+    <div class="modal-body" style="padding:0">
+      <!-- GALERIE PHOTO -->
+      <div id="detailGallery" style="position:relative;background:#111;border-radius:0">
+        <!-- Photo principale -->
+        <div id="detailMainPhoto" style="width:100%;height:300px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+        </div>
+        <!-- Flèches navigation -->
+        <button id="galleryPrev" onclick="galleryNav(-1)" style="display:none;position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;z-index:10">‹</button>
+        <button id="galleryNext" onclick="galleryNav(1)" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;z-index:10">›</button>
+        <!-- Compteur photos -->
+        <div id="galleryCounter" style="display:none;position:absolute;bottom:10px;right:12px;background:rgba(0,0,0,0.55);color:white;font-size:0.78rem;padding:3px 10px;border-radius:50px"></div>
+        <!-- Miniatures -->
+        <div id="detailThumbs" style="display:flex;gap:6px;padding:8px 12px;overflow-x:auto;background:#1a1a1a"></div>
       </div>
-      <p id="detailDesc" style="font-size:0.92rem;line-height:1.6;color:#444"></p>
-      <div class="ad-detail-seller" id="detailSeller"></div>
+      <!-- INFOS -->
+      <div style="padding:18px 22px">
+        <div class="ad-detail-price" id="detailPrice"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <span id="detailCat" style="background:var(--bleu-light);color:var(--bleu);padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
+          <span id="detailCity" style="background:var(--vert-light);color:var(--vert-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
+          <span id="detailCond" style="background:#fff8e1;color:#e65100;padding:4px 10px;border-radius:50px;font-size:0.8rem;font-weight:600"></span>
+        </div>
+        <p id="detailDesc" style="font-size:0.92rem;line-height:1.6;color:#444;margin-bottom:14px"></p>
+        <div class="ad-detail-seller" id="detailSeller"></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modalDetail')">Fermer</button>
@@ -506,8 +553,11 @@
           <label>Mot de passe</label>
           <input type="password" id="loginPass" placeholder="••••••••">
         </div>
-        <p class="form-hint" style="margin-bottom:10px">Compte admin : <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a3c2c7cecacde3c4c2c1cccdc0cccacd8dc4c2">[email&#160;protected]</a></strong> / <strong>admin123</strong></p>
+        <p class="form-hint" style="margin-bottom:10px">Connectez-vous avec votre email et mot de passe.</p>
         <button class="btn btn-green" style="width:100%" onclick="doLogin()">Se connecter</button>
+        <p style="text-align:center;margin-top:12px;font-size:0.85rem">
+          <a href="#" onclick="showForgotPassword();return false;" style="color:var(--bleu);text-decoration:underline">Mot de passe oublié ?</a>
+        </p>
       </div>
       <div id="authRegister" style="display:none">
         <div class="form-row">
@@ -533,6 +583,18 @@
           <input type="password" id="regPass" placeholder="••••••••">
         </div>
         <button class="btn btn-green" style="width:100%" onclick="doRegister()">Créer mon compte</button>
+      </div>
+      <!-- MOT DE PASSE OUBLIÉ -->
+      <div id="authForgot" style="display:none">
+        <p style="font-size:0.88rem;color:var(--gris-text);margin-bottom:14px">Entrez votre email et nous vous enverrons un lien pour réinitialiser votre mot de passe.</p>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="forgotEmail" placeholder="votremail@email.com">
+        </div>
+        <button class="btn btn-green" style="width:100%" onclick="doForgotPassword()">Envoyer le lien</button>
+        <p style="text-align:center;margin-top:12px;font-size:0.85rem">
+          <a href="#" onclick="showLoginTab()" style="color:var(--bleu);text-decoration:underline">← Retour à la connexion</a>
+        </p>
       </div>
     </div>
   </div>
@@ -654,9 +716,10 @@
 </div>
 
 <!-- Firebase SDK -->
-<script type="module">
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, doc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ═══════════════════════════════════════════════════
 //  FIREBASE CONFIG
@@ -671,7 +734,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
+const auth = getAuth(app);
 
 // ═══════════════════════════════════════════════════
 //  STATE LOCAL (utilisateurs, session, UI)
@@ -689,19 +753,54 @@ let state = {
     {id:'cat9', icon:'🎸', name:'Loisirs & Sport'},
   ],
   ads: [],
-  users: JSON.parse(localStorage.getItem('gc_users') || '[{"id":"u1","firstName":"Admin","lastName":"GabonCoin","email":"admin@gaboncoin.ga","pass":"admin123","phone":"+241 00 00 00 00","date":"2023-01-01","isAdmin":true}]'),
+  users: [],
   messages: JSON.parse(localStorage.getItem('gc_messages') || '[]'),
-  currentUser: JSON.parse(localStorage.getItem('gc_session') || 'null'),
+  currentUser: null,
   activeCategory: null,
   activeCity: null,
 };
 
 function saveLocal() {
-  localStorage.setItem('gc_users', JSON.stringify(state.users));
   localStorage.setItem('gc_messages', JSON.stringify(state.messages));
-  if(state.currentUser) localStorage.setItem('gc_session', JSON.stringify(state.currentUser));
-  else localStorage.removeItem('gc_session');
 }
+
+// ═══════════════════════════════════════════════════
+//  FIREBASE AUTH — écoute automatique de la session
+// ═══════════════════════════════════════════════════
+onAuthStateChanged(auth, async (firebaseUser) => {
+  if(firebaseUser) {
+    // Utilisateur connecté — charger son profil Firestore
+    try {
+      const snap = await getDocs(query(collection(db, 'users')));
+      const profiles = snap.docs.map(d => ({id: d.id, ...d.data()}));
+      const profile = profiles.find(p => p.id === firebaseUser.uid) || {};
+      state.users = profiles;
+      state.currentUser = {
+        id: firebaseUser.uid,
+        firstName: profile.firstName || firebaseUser.displayName?.split(' ')[0] || 'Utilisateur',
+        lastName:  profile.lastName  || firebaseUser.displayName?.split(' ')[1] || '',
+        email:     firebaseUser.email,
+        phone:     profile.phone || '',
+        date:      profile.date  || new Date().toISOString().split('T')[0],
+        isAdmin:   profile.isAdmin || false,
+      };
+    } catch(e) {
+      state.currentUser = {
+        id: firebaseUser.uid,
+        firstName: firebaseUser.displayName?.split(' ')[0] || 'Utilisateur',
+        lastName:  firebaseUser.displayName?.split(' ')[1] || '',
+        email: firebaseUser.email,
+        phone: '', date: '', isAdmin: false,
+      };
+    }
+  } else {
+    state.currentUser = null;
+  }
+  updateHeader();
+  renderNav();
+  const sidebar = document.getElementById('loggedSidebar');
+  if(sidebar) sidebar.style.display = state.currentUser ? 'block' : 'none';
+});
 
 // ═══════════════════════════════════════════════════
 //  FIREBASE — ANNONCES (lecture temps réel)
@@ -790,7 +889,8 @@ function renderNav() {
   const nav = document.getElementById('navTabs');
   let html = `<div class="nav-tab ${!state.activeCategory?'active':''}" onclick="filterCategory(null,this)"><span class="tab-icon">🏷️</span>Toutes</div>`;
   state.categories.forEach(cat => {
-    html += `<div class="nav-tab ${state.activeCategory===cat.id?'active':''}" onclick="filterCategory(${cat.id},this)"><span class="tab-icon">${cat.icon}</span>${cat.name}</div>`;
+    const isActive = state.activeCategory === cat.id;
+    html += `<div class="nav-tab ${isActive?'active':''}" onclick="filterCategory('${cat.id}',this)"><span class="tab-icon">${cat.icon}</span>${cat.name}</div>`;
   });
   if(state.currentUser?.isAdmin) {
     html += `<div class="nav-tab" onclick="openAdminPanel()" style="margin-left:auto;color:var(--jaune)"><span class="tab-icon">⚙️</span>Admin</div>`;
@@ -799,7 +899,7 @@ function renderNav() {
 }
 
 function filterCategory(catId, el) {
-  state.activeCategory = catId;
+  state.activeCategory = catId; // string id from Firestore
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   renderAds();
@@ -839,11 +939,16 @@ function renderAds() {
     grid.innerHTML = `<div class="no-ads" style="grid-column:1/-1"><div style="font-size:3rem">🔍</div><p>Aucune annonce trouvée</p></div>`;
     return;
   }
-  grid.innerHTML = ads.map(ad => `
-    <div class="ad-card" onclick="openDetail(${ad.id})">
-      ${ad.date && new Date(ad.date) > new Date(Date.now()-3*86400000) ? '<div class="ad-badge">Nouveau</div>' : ''}
+  grid.innerHTML = ads.map(ad => {
+    const thumb = (ad.photos && ad.photos[0])
+      ? `<img src="${ad.photos[0]}" alt="${ad.title}" style="width:100%;height:100%;object-fit:cover">`
+      : `<span style="font-size:2.5rem">${ad.emoji||'📦'}</span>`;
+    const isNew = ad.date && new Date(ad.date) > new Date(Date.now()-3*86400000);
+    return `
+    <div class="ad-card" onclick="openDetail('${ad.id}')">
+      ${isNew ? '<div class="ad-badge">Nouveau</div>' : ''}
       <button class="ad-fav" onclick="event.stopPropagation();toggleFav(this)">🤍</button>
-      <div class="ad-img">${ad.emoji}</div>
+      <div class="ad-img">${thumb}</div>
       <div class="ad-body">
         <div class="ad-title">${ad.title}</div>
         <div class="ad-price">${formatPrice(ad.price)} <span>FCFA</span></div>
@@ -852,8 +957,8 @@ function renderAds() {
           <i>🏷️ ${getCatName(ad.category)}</i>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
   updateStats();
   updateCityCounts();
 }
@@ -887,35 +992,222 @@ function updateCityCounts() {
 }
 
 // ═══════════════════════════════════════════════════
-//  AD DETAIL
+//  AD DETAIL + GALERIE PHOTO
 // ═══════════════════════════════════════════════════
+let galleryPhotos = [];
+let galleryIndex = 0;
+
 function openDetail(id) {
-  const ad = state.ads.find(a=>a.id===id);
+  const ad = state.ads.find(a => a.id === id);
   if(!ad) return;
+
   document.getElementById('detailTitle').textContent = ad.title;
-  document.getElementById('detailImg').textContent = ad.emoji;
   document.getElementById('detailPrice').textContent = formatPrice(ad.price) + ' FCFA';
   document.getElementById('detailCat').textContent = getCatName(ad.category);
   document.getElementById('detailCity').textContent = '📍 ' + ad.city;
   document.getElementById('detailCond').textContent = ad.condition;
   document.getElementById('detailDesc').textContent = ad.desc;
+
+  // ── GALERIE ──
+  galleryPhotos = (ad.photos && ad.photos.length) ? ad.photos : [];
+  galleryIndex = 0;
+
+  const mainEl    = document.getElementById('detailMainPhoto');
+  const thumbsEl  = document.getElementById('detailThumbs');
+  const prevBtn   = document.getElementById('galleryPrev');
+  const nextBtn   = document.getElementById('galleryNext');
+  const counter   = document.getElementById('galleryCounter');
+
+  if(galleryPhotos.length === 0) {
+    // Pas de photos : afficher l'emoji en grand
+    mainEl.innerHTML = `<span style="font-size:6rem">${ad.emoji || '📦'}</span>`;
+    thumbsEl.innerHTML = '';
+    thumbsEl.style.display = 'none';
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    counter.style.display = 'none';
+  } else {
+    // Afficher la galerie
+    thumbsEl.style.display = galleryPhotos.length > 1 ? 'flex' : 'none';
+    prevBtn.style.display  = galleryPhotos.length > 1 ? 'block' : 'none';
+    nextBtn.style.display  = galleryPhotos.length > 1 ? 'block' : 'none';
+    counter.style.display  = galleryPhotos.length > 1 ? 'block' : 'none';
+
+    // Miniatures
+    thumbsEl.innerHTML = galleryPhotos.map((p, i) => `
+      <img src="${p}" data-idx="${i}" onclick="galleryGoTo(${i})"
+        style="height:56px;width:56px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;
+               border:2px solid ${i===0?'var(--jaune)':'transparent'};transition:border .15s;opacity:${i===0?1:0.65}">
+    `).join('');
+
+    renderGalleryMain();
+  }
+
+  // ── VENDEUR ──
   document.getElementById('detailSeller').innerHTML = `
-    <div class="seller-avatar">${ad.author[0]}</div>
+    <div class="seller-avatar">${(ad.author || '?')[0]}</div>
     <div class="seller-info">
-      <div class="seller-name">${ad.author}</div>
-      <div class="seller-since">Vendeur depuis 2023</div>
+      <div class="seller-name">${ad.author || 'Anonyme'}</div>
+      <div class="seller-since">Membre GabonCoin</div>
     </div>
-    <button class="btn btn-outline btn-sm" onclick="openModal('modalMessages')">💬</button>
+    <button class="btn btn-outline btn-sm" onclick="closeModal('modalDetail');openContactMessage(currentDetailAd)">💬</button>
   `;
+
+  window.currentDetailAd = ad;
   const contactBtn = document.getElementById('detailContact');
   contactBtn.onclick = () => { closeModal('modalDetail'); openContactMessage(ad); };
-  openModal('modalDetail');
+
+  document.getElementById('modalDetail').classList.remove('hidden');
+}
+
+function renderGalleryMain() {
+  const mainEl  = document.getElementById('detailMainPhoto');
+  const counter = document.getElementById('galleryCounter');
+  const p = galleryPhotos[galleryIndex];
+  mainEl.innerHTML = `<img src="${p}" alt="Photo ${galleryIndex+1}"
+    style="max-width:100%;max-height:300px;object-fit:contain;cursor:zoom-in"
+    onclick="openLightbox(${galleryIndex})">`;
+  counter.textContent = `${galleryIndex + 1} / ${galleryPhotos.length}`;
+  // Highlight active thumb
+  document.querySelectorAll('#detailThumbs img').forEach((img, i) => {
+    img.style.border = i === galleryIndex ? '2px solid var(--jaune)' : '2px solid transparent';
+    img.style.opacity = i === galleryIndex ? '1' : '0.6';
+  });
+}
+
+function galleryNav(dir) {
+  galleryIndex = (galleryIndex + dir + galleryPhotos.length) % galleryPhotos.length;
+  renderGalleryMain();
+}
+
+function galleryGoTo(idx) {
+  galleryIndex = idx;
+  renderGalleryMain();
+}
+
+// ── LIGHTBOX (plein écran) ──
+function openLightbox(idx) {
+  galleryIndex = idx;
+  let lb = document.getElementById('lightbox');
+  if(!lb) {
+    lb = document.createElement('div');
+    lb.id = 'lightbox';
+    lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px';
+    lb.innerHTML = `
+      <button onclick="closeLightbox()" style="position:absolute;top:16px;right:20px;background:none;border:none;color:white;font-size:2rem;cursor:pointer">✕</button>
+      <button onclick="lbNav(-1)" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:2rem;width:48px;height:48px;border-radius:50%;cursor:pointer" id="lbPrev">‹</button>
+      <button onclick="lbNav(1)" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:2rem;width:48px;height:48px;border-radius:50%;cursor:pointer" id="lbNext">›</button>
+      <img id="lbImg" src="" style="max-width:90vw;max-height:80vh;object-fit:contain;border-radius:8px">
+      <div id="lbCounter" style="color:rgba(255,255,255,0.6);font-size:0.85rem"></div>
+      <div id="lbThumbs" style="display:flex;gap:8px;overflow-x:auto;padding:0 20px;max-width:100vw"></div>
+    `;
+    lb.addEventListener('click', e => { if(e.target === lb) closeLightbox(); });
+    document.body.appendChild(lb);
+  }
+  renderLightbox();
+  lb.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function renderLightbox() {
+  document.getElementById('lbImg').src = galleryPhotos[galleryIndex];
+  document.getElementById('lbCounter').textContent = `${galleryIndex + 1} / ${galleryPhotos.length}`;
+  document.getElementById('lbPrev').style.display = galleryPhotos.length > 1 ? 'block' : 'none';
+  document.getElementById('lbNext').style.display = galleryPhotos.length > 1 ? 'block' : 'none';
+  document.getElementById('lbThumbs').innerHTML = galleryPhotos.map((p,i) => `
+    <img src="${p}" onclick="lbGoTo(${i})" style="height:48px;width:48px;object-fit:cover;border-radius:6px;cursor:pointer;
+      border:2px solid ${i===galleryIndex?'var(--jaune)':'transparent'};opacity:${i===galleryIndex?1:0.5}">
+  `).join('');
+}
+
+function lbNav(dir) {
+  galleryIndex = (galleryIndex + dir + galleryPhotos.length) % galleryPhotos.length;
+  renderLightbox();
+  renderGalleryMain();
+}
+function lbGoTo(idx) { galleryIndex = idx; renderLightbox(); renderGalleryMain(); }
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  if(lb) lb.style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 function openContactMessage(ad) {
-  if(!state.currentUser) { openModal('modalAuth'); return; }
-  openModal('modalMessages');
-  renderConvList(ad.authorId);
+  if(!state.currentUser) { document.getElementById('modalAuth').classList.remove('hidden'); return; }
+  if(ad.authorId === state.currentUser.id) { showToast('⚠️ C\'est votre propre annonce !'); return; }
+  // Create an initial message if no conversation exists yet
+  const uid = state.currentUser.id;
+  const pid = ad.authorId;
+  const existing = state.messages.some(m =>
+    (m.from === uid && m.to === pid) || (m.from === pid && m.to === uid)
+  );
+  if(!existing) {
+    const initMsg = {
+      id: 'm' + Date.now(),
+      from: uid,
+      to: pid,
+      text: `Bonjour, je suis intéressé(e) par votre annonce : "${ad.title}"`,
+      date: new Date().toISOString(),
+      read: false
+    };
+    state.messages.push(initMsg);
+    saveLocal();
+  }
+  activeConvUserId = pid;
+  document.getElementById('modalMessages').classList.remove('hidden');
+  renderConvList(pid);
+}
+
+// ═══════════════════════════════════════════════════
+//  PHOTO UPLOAD — 4 emplacements indépendants
+// ═══════════════════════════════════════════════════
+let selectedPhotos = [null, null, null, null]; // 4 slots base64
+let currentSlot = 0;
+
+function triggerSlot(idx) {
+  currentSlot = idx;
+  const input = document.getElementById('photoInput');
+  input.value = ''; // reset pour pouvoir re-sélectionner le même fichier
+  input.click();
+}
+
+function loadSlotPhoto(input) {
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 5 * 1024 * 1024) { showToast('⚠️ Photo trop lourde (max 5 Mo)'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    selectedPhotos[currentSlot] = e.target.result;
+    const slot = document.getElementById('slot' + currentSlot);
+    const img  = slot.querySelector('.slot-img');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    slot.classList.add('has-photo');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeSlot(e, idx) {
+  e.stopPropagation();
+  selectedPhotos[idx] = null;
+  const slot = document.getElementById('slot' + idx);
+  const img  = slot.querySelector('.slot-img');
+  img.src = '';
+  img.style.display = 'none';
+  slot.classList.remove('has-photo');
+}
+
+function resetPhotoSlots() {
+  selectedPhotos = [null, null, null, null];
+  for(let i = 0; i < 4; i++) {
+    const slot = document.getElementById('slot' + i);
+    if(!slot) continue;
+    const img = slot.querySelector('.slot-img');
+    img.src = '';
+    img.style.display = 'none';
+    slot.classList.remove('has-photo');
+  }
+  document.getElementById('photoInput').value = '';
 }
 
 // ═══════════════════════════════════════════════════
@@ -927,30 +1219,45 @@ function populateCategorySelect() {
   sel.innerHTML = state.categories.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
 }
 
-function submitAd() {
+async function submitAd() {
   if(!state.currentUser) { closeModal('modalPost'); openModal('modalAuth'); return; }
   const title = document.getElementById('postTitle').value.trim();
   const price = parseInt(document.getElementById('postPrice').value);
   const desc = document.getElementById('postDesc').value.trim();
   if(!title || !price || !desc) { showToast('⚠️ Veuillez remplir tous les champs obligatoires'); return; }
+
+  // Determine thumbnail: first photo or category emoji fallback
+  const catId = document.getElementById('postCategory').value;
+  const cat = state.categories.find(c => c.id === catId);
+  const emojiMap = {'📱':1,'🚗':2,'🏠':3,'💻':4,'👕':5,'🛋️':6,'🌾':7,'💼':8,'🎸':9};
+  const fallbackEmoji = cat ? cat.icon : '📦';
+
   const newAd = {
     title,
     price,
-    category: document.getElementById('postCategory').value,
+    category: catId,
     city: document.getElementById('postCity').value,
     condition: document.getElementById('postCondition').value,
     desc,
-    emoji: document.getElementById('postEmoji').value,
+    photos: selectedPhotos.filter(p => p !== null), // garder seulement les slots remplis
+    emoji: fallbackEmoji,
     author: state.currentUser.firstName + ' ' + state.currentUser.lastName,
     authorId: state.currentUser.id,
     date: new Date().toISOString(),
     active: true,
   };
-  saveAdToFirebase(newAd);
+
+  const btn = document.querySelector('#modalPost .btn-green');
+  btn.textContent = '⏳ Publication...';
+  btn.disabled = true;
+  await saveAdToFirebase(newAd);
+  btn.textContent = 'Publier l\'annonce';
+  btn.disabled = false;
   closeModal('modalPost');
   document.getElementById('postTitle').value='';
   document.getElementById('postPrice').value='';
   document.getElementById('postDesc').value='';
+  resetPhotoSlots();
 }
 
 // ═══════════════════════════════════════════════════
@@ -958,52 +1265,113 @@ function submitAd() {
 // ═══════════════════════════════════════════════════
 function switchAuthTab(tab, el) {
   document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
+  if(el) el.classList.add('active');
   document.getElementById('authLogin').style.display = tab==='login'?'block':'none';
   document.getElementById('authRegister').style.display = tab==='register'?'block':'none';
+  document.getElementById('authForgot').style.display = tab==='forgot'?'block':'none';
 }
 
-function doLogin() {
+function showForgotPassword() {
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('authLogin').style.display = 'none';
+  document.getElementById('authRegister').style.display = 'none';
+  document.getElementById('authForgot').style.display = 'block';
+}
+
+function showLoginTab() {
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>{ if(i===0) t.classList.add('active'); else t.classList.remove('active'); });
+  document.getElementById('authLogin').style.display = 'block';
+  document.getElementById('authRegister').style.display = 'none';
+  document.getElementById('authForgot').style.display = 'none';
+}
+
+async function doForgotPassword() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if(!email) { showToast('⚠️ Entrez votre email'); return; }
+  const btn = document.querySelector('#authForgot .btn-green');
+  btn.textContent = '⏳ Envoi...'; btn.disabled = true;
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showToast('✅ Email envoyé ! Vérifiez votre boîte mail.');
+    showLoginTab();
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found': '❌ Aucun compte avec cet email',
+      'auth/invalid-email':  '❌ Email invalide',
+    };
+    showToast(msgs[e.code] || '❌ Erreur : ' + e.message);
+  } finally {
+    btn.textContent = 'Envoyer le lien'; btn.disabled = false;
+  }
+}
+
+async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const user = state.users.find(u=>u.email===email && u.pass===pass);
-  if(!user) { showToast('❌ Email ou mot de passe incorrect'); return; }
-  state.currentUser = user;
-  saveLocal();
-  closeModal('modalAuth');
-  updateHeader();
-  renderNav();
-  showToast(`👋 Bienvenue ${user.firstName} !`);
-  document.getElementById('loggedSidebar').style.display = 'block';
+  const pass  = document.getElementById('loginPass').value;
+  if(!email || !pass) { showToast('⚠️ Remplissez tous les champs'); return; }
+  const btn = document.querySelector('#authLogin .btn-green');
+  btn.textContent = '⏳ Connexion...'; btn.disabled = true;
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    closeModal('modalAuth');
+    // onAuthStateChanged s'occupe du reste automatiquement
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found':  '❌ Aucun compte avec cet email',
+      'auth/wrong-password':  '❌ Mot de passe incorrect',
+      'auth/invalid-email':   '❌ Email invalide',
+      'auth/too-many-requests':'❌ Trop de tentatives. Réessayez plus tard.',
+      'auth/invalid-credential':'❌ Email ou mot de passe incorrect',
+    };
+    showToast(msgs[e.code] || '❌ Erreur : ' + e.message);
+  } finally {
+    btn.textContent = 'Se connecter'; btn.disabled = false;
+  }
 }
 
-function doRegister() {
+async function doRegister() {
   const firstName = document.getElementById('regFirst').value.trim();
-  const lastName = document.getElementById('regLast').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
-  const pass = document.getElementById('regPass').value;
-  if(!firstName||!lastName||!email||!pass) { showToast('⚠️ Remplissez tous les champs'); return; }
-  if(state.users.find(u=>u.email===email)) { showToast('❌ Email déjà utilisé'); return; }
-  const newUser = { id:'u'+Date.now(), firstName, lastName, email, pass, phone, date:new Date().toISOString().split('T')[0], isAdmin:false };
-  state.users.push(newUser);
-  state.currentUser = newUser;
-  saveLocal();
-  closeModal('modalAuth');
-  updateHeader();
-  renderNav();
-  showToast(`🎉 Compte créé ! Bienvenue ${firstName} !`);
-  document.getElementById('loggedSidebar').style.display = 'block';
+  const lastName  = document.getElementById('regLast').value.trim();
+  const email     = document.getElementById('regEmail').value.trim();
+  const phone     = document.getElementById('regPhone').value.trim();
+  const pass      = document.getElementById('regPass').value;
+  if(!firstName || !lastName || !email || !pass) { showToast('⚠️ Remplissez tous les champs'); return; }
+  if(pass.length < 6) { showToast('⚠️ Mot de passe minimum 6 caractères'); return; }
+  const btn = document.querySelector('#authRegister .btn-green');
+  btn.textContent = '⏳ Création...'; btn.disabled = true;
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    // Mettre à jour le displayName Firebase
+    await updateProfile(cred.user, { displayName: `${firstName} ${lastName}` });
+    // Sauvegarder le profil dans Firestore
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      firstName, lastName, email, phone,
+      date: new Date().toISOString().split('T')[0],
+      isAdmin: false,
+    });
+    closeModal('modalAuth');
+    showToast(`🎉 Bienvenue ${firstName} ! Compte créé avec succès.`);
+    // onAuthStateChanged se charge du reste
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': '❌ Email déjà utilisé',
+      'auth/invalid-email':        '❌ Email invalide',
+      'auth/weak-password':        '❌ Mot de passe trop faible (min. 6 caractères)',
+    };
+    showToast(msgs[e.code] || '❌ Erreur : ' + e.message);
+  } finally {
+    btn.textContent = 'Créer mon compte'; btn.disabled = false;
+  }
 }
 
-function doLogout() {
+async function doLogout() {
+  await signOut(auth);
   state.currentUser = null;
-  saveLocal();
   closeModal('modalProfile');
   updateHeader();
   renderNav();
   document.getElementById('loggedSidebar').style.display = 'none';
-  showToast('À bientôt !');
+  showToast('À bientôt ! 👋');
 }
 
 function updateHeader() {
@@ -1033,64 +1401,105 @@ function getUnreadCount() {
 //  PROFILE
 // ═══════════════════════════════════════════════════
 function openProfileModal() {
-  if(!state.currentUser) { openModal('modalAuth'); return; }
+  if(!state.currentUser) { document.getElementById('modalAuth').classList.remove('hidden'); return; }
   const u = state.currentUser;
-  const myAdsCount = state.ads.filter(a=>a.authorId===u.id).length;
+  const myAdsCount = state.ads.filter(a => a.authorId === u.id).length;
+  const msgCount = state.messages.filter(m => m.from === u.id || m.to === u.id).length;
   document.getElementById('profileBody').innerHTML = `
     <div class="profile-header">
       <div class="profile-avatar">${u.firstName[0]}${u.lastName[0]}</div>
       <div class="profile-name">${u.firstName} ${u.lastName}</div>
       <div class="profile-email">${u.email}</div>
+      ${u.phone ? `<div style="font-size:0.8rem;opacity:0.8;margin-top:4px">📞 ${u.phone}</div>` : ''}
     </div>
     <div style="display:flex;gap:12px;margin-bottom:16px">
-      <div style="flex:1;background:var(--vert-light);border-radius:10px;padding:14px;text-align:center">
+      <div style="flex:1;background:var(--vert-light);border-radius:10px;padding:14px;text-align:center;cursor:pointer" onclick="closeModal('modalProfile');openMyAds()">
         <strong style="font-size:1.4rem;color:var(--vert)">${myAdsCount}</strong>
-        <p style="font-size:0.78rem;color:var(--gris-text)">annonces</p>
+        <p style="font-size:0.78rem;color:var(--gris-text)">mes annonces</p>
       </div>
-      <div style="flex:1;background:var(--bleu-light);border-radius:10px;padding:14px;text-align:center">
-        <strong style="font-size:1.4rem;color:var(--bleu)">${state.messages.filter(m=>m.from===u.id||m.to===u.id).length}</strong>
+      <div style="flex:1;background:var(--bleu-light);border-radius:10px;padding:14px;text-align:center;cursor:pointer" onclick="closeModal('modalProfile');document.getElementById('modalMessages').classList.remove('hidden');renderConvList(null)">
+        <strong style="font-size:1.4rem;color:var(--bleu)">${msgCount}</strong>
         <p style="font-size:0.78rem;color:var(--gris-text)">messages</p>
       </div>
     </div>
-    <div class="form-group"><label>Téléphone</label><input type="tel" value="${u.phone||''}" placeholder="+241 ..."></div>
-    ${u.isAdmin?`<div style="background:#fff8e1;padding:12px;border-radius:10px;text-align:center;margin-top:10px">
+    <div class="form-group">
+      <label>Prénom</label>
+      <input type="text" id="profileFirst" value="${u.firstName}">
+    </div>
+    <div class="form-group">
+      <label>Nom</label>
+      <input type="text" id="profileLast" value="${u.lastName}">
+    </div>
+    <div class="form-group">
+      <label>Téléphone</label>
+      <input type="tel" id="profilePhone" value="${u.phone||''}" placeholder="+241 ...">
+    </div>
+    <button class="btn btn-green" style="width:100%;margin-bottom:8px" onclick="saveProfile()">💾 Enregistrer les modifications</button>
+    ${u.isAdmin ? `
+    <div style="background:#fff8e1;padding:12px;border-radius:10px;text-align:center;margin-top:10px">
       <strong>👑 Compte Administrateur</strong><br>
       <button class="btn btn-green btn-sm" style="margin-top:8px" onclick="closeModal('modalProfile');openAdminPanel()">Ouvrir le panneau admin</button>
-    </div>`:''}
+    </div>` : ''}
   `;
-  openModal('modalProfile');
+  document.getElementById('modalProfile').classList.remove('hidden');
+}
+
+async function saveProfile() {
+  if(!state.currentUser) return;
+  const first = document.getElementById('profileFirst').value.trim();
+  const last  = document.getElementById('profileLast').value.trim();
+  const phone = document.getElementById('profilePhone').value.trim();
+  if(!first || !last) { showToast('⚠️ Prénom et nom obligatoires'); return; }
+  const btn = document.querySelector('#modalProfile .btn-green');
+  if(btn) { btn.textContent = '⏳ Enregistrement...'; btn.disabled = true; }
+  try {
+    await updateDoc(doc(db, 'users', state.currentUser.id), { firstName: first, lastName: last, phone });
+    await updateProfile(auth.currentUser, { displayName: `${first} ${last}` });
+    state.currentUser.firstName = first;
+    state.currentUser.lastName  = last;
+    state.currentUser.phone     = phone;
+    updateHeader();
+    showToast('✅ Profil mis à jour !');
+    openProfileModal();
+  } catch(e) {
+    showToast('❌ Erreur : ' + e.message);
+  } finally {
+    if(btn) { btn.textContent = '💾 Enregistrer les modifications'; btn.disabled = false; }
+  }
 }
 
 // ═══════════════════════════════════════════════════
 //  MY ADS
 // ═══════════════════════════════════════════════════
 function openMyAds() {
-  if(!state.currentUser) { openModal('modalAuth'); return; }
-  const myAds = state.ads.filter(a=>a.authorId===state.currentUser.id);
+  if(!state.currentUser) { document.getElementById('modalAuth').classList.remove('hidden'); return; }
+  const myAds = state.ads.filter(a => a.authorId === state.currentUser.id);
   if(!myAds.length) {
-    document.getElementById('myAdsBody').innerHTML = `<div class="no-ads"><div style="font-size:3rem">📋</div><p>Vous n'avez pas encore d'annonces</p></div>`;
+    document.getElementById('myAdsBody').innerHTML = `<div class="no-ads"><div style="font-size:3rem">📋</div><p>Vous n'avez pas encore d'annonces</p><button class="btn btn-green" style="margin-top:16px" onclick="closeModal('modalMyAds');populateCategorySelect();document.getElementById('modalPost').classList.remove('hidden')">+ Publier ma première annonce</button></div>`;
   } else {
     document.getElementById('myAdsBody').innerHTML = `
       <table class="ads-table">
         <thead><tr><th>Annonce</th><th>Prix</th><th>Ville</th><th>Statut</th><th>Actions</th></tr></thead>
         <tbody>${myAds.map(ad=>`
           <tr>
-            <td><strong>${ad.emoji} ${ad.title}</strong></td>
+            <td><strong>${ad.emoji||'📦'} ${ad.title}</strong></td>
             <td>${formatPrice(ad.price)} FCFA</td>
             <td>${ad.city}</td>
             <td><span class="status-badge ${ad.active?'status-active':'status-pending'}">${ad.active?'Active':'Inactive'}</span></td>
-            <td><button class="icon-btn danger" onclick="deleteMyAd(${ad.id})">🗑️</button></td>
+            <td><button class="icon-btn danger" onclick="deleteMyAd('${ad.id}')">🗑️</button></td>
           </tr>
         `).join('')}</tbody>
       </table>
     `;
   }
-  openModal('modalMyAds');
+  document.getElementById('modalMyAds').classList.remove('hidden');
 }
 
 function deleteMyAd(id) {
+  if(!confirm('Supprimer cette annonce ?')) return;
   deleteAdFromFirebase(id);
   closeModal('modalMyAds');
+  showToast('🗑️ Annonce supprimée');
   setTimeout(openMyAds, 800);
 }
 
@@ -1102,51 +1511,128 @@ let activeConvUserId = null;
 function renderConvList(highlightUserId) {
   if(!state.currentUser) return;
   const uid = state.currentUser.id;
-  const convPartners = [...new Set(state.messages
-    .filter(m=>m.from===uid||m.to===uid)
-    .map(m=>m.from===uid?m.to:m.from))];
+  // Get unique conversation partners
+  const convPartners = [...new Set(
+    state.messages
+      .filter(m => m.from === uid || m.to === uid)
+      .map(m => m.from === uid ? m.to : m.from)
+  )];
   const convListEl = document.getElementById('convList');
   if(!convPartners.length) {
-    convListEl.innerHTML = '<p style="padding:14px;font-size:0.82rem;color:var(--gris-text)">Aucune conversation</p>';
+    convListEl.innerHTML = '<p style="padding:14px;font-size:0.82rem;color:var(--gris-text)">Aucune conversation pour le moment.<br><br>Contactez un vendeur depuis une annonce.</p>';
+    document.getElementById('chatMessages').innerHTML = '<p style="text-align:center;color:var(--gris-text);padding:40px 20px;font-size:0.85rem">Sélectionnez une conversation ou contactez un vendeur depuis une annonce.</p>';
     return;
   }
   convListEl.innerHTML = convPartners.map(pid => {
-    const partner = state.users.find(u=>u.id===pid) || {firstName:'Utilisateur',lastName:'',id:pid};
-    const lastMsg = [...state.messages].filter(m=>(m.from===uid&&m.to===pid)||(m.from===pid&&m.to===uid)).pop();
-    return `<div class="conv-item ${activeConvUserId===pid||highlightUserId===pid?'active':''}" onclick="openConversation(${pid})">
-      <div class="conv-name">${partner.firstName} ${partner.lastName}</div>
-      <div class="conv-preview">${lastMsg?lastMsg.text:'...'}</div>
+    const partner = state.users.find(u => u.id === pid) || {firstName:'Utilisateur', lastName:'', id: pid};
+    const msgs = state.messages.filter(m => (m.from===uid&&m.to===pid)||(m.from===pid&&m.to===uid));
+    const lastMsg = msgs[msgs.length - 1];
+    const unread = msgs.filter(m => m.to === uid && !m.read).length;
+    const isActive = activeConvUserId === pid;
+    return `<div class="conv-item ${isActive ? 'active' : ''}" onclick="openConversation('${pid}')">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="avatar-sm" style="width:28px;height:28px;font-size:0.72rem;flex-shrink:0">${partner.firstName[0]}${(partner.lastName||'')[0]||''}</div>
+        <div style="flex:1;min-width:0">
+          <div class="conv-name">${partner.firstName} ${partner.lastName} ${unread>0?`<span style="background:var(--vert);color:white;font-size:0.7rem;padding:1px 5px;border-radius:50px">${unread}</span>`:''}</div>
+          <div class="conv-preview">${lastMsg ? lastMsg.text : '...'}</div>
+        </div>
+      </div>
     </div>`;
   }).join('');
-  if(highlightUserId) openConversation(highlightUserId);
-  else if(convPartners.length) openConversation(convPartners[0]);
+
+  // Open the right conversation
+  const toOpen = highlightUserId || activeConvUserId || convPartners[0];
+  if(toOpen) openConversation(toOpen);
 }
 
 function openConversation(partnerId) {
   activeConvUserId = partnerId;
   const uid = state.currentUser.id;
-  const msgs = state.messages.filter(m=>(m.from===uid&&m.to===partnerId)||(m.from===partnerId&&m.to===uid));
+  // Mark messages as read
+  state.messages.forEach(m => { if(m.to === uid && m.from === partnerId) m.read = true; });
+  saveLocal();
+
+  const partner = state.users.find(u => u.id === partnerId) || {firstName:'Utilisateur', lastName:'', id: partnerId};
+  const msgs = state.messages.filter(m =>
+    (m.from === uid && m.to === partnerId) ||
+    (m.from === partnerId && m.to === uid)
+  );
+
+  // Refresh conv list highlighting without recursion
+  document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+  const items = document.querySelectorAll('.conv-item');
+  items.forEach(el => { if(el.onclick && el.onclick.toString().includes(`'${partnerId}'`)) el.classList.add('active'); });
+
   const chatEl = document.getElementById('chatMessages');
-  if(!msgs.length) { chatEl.innerHTML = '<p style="text-align:center;color:var(--gris-text);padding:20px;font-size:0.85rem">Démarrez la conversation !</p>'; return; }
-  chatEl.innerHTML = msgs.map(m=>`
-    <div class="chat-msg ${m.from===uid?'sent':'recv'}">
-      <div class="chat-bubble">${m.text}</div>
-      <div class="chat-time">${new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>
-    </div>
-  `).join('');
+  // Chat header
+  const headerHtml = `<div style="padding:10px 14px;border-bottom:1.5px solid var(--gris-mid);background:var(--gris);display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <div class="avatar-sm" style="width:34px;height:34px">${partner.firstName[0]}${(partner.lastName||'')[0]||''}</div>
+    <div><strong style="font-size:0.9rem">${partner.firstName} ${partner.lastName}</strong></div>
+  </div>`;
+  document.querySelector('.chat-area').insertAdjacentHTML('afterbegin', headerHtml);
+  // Remove old header if exists
+  const headers = document.querySelectorAll('.chat-area > div:first-child:not(.chat-messages):not(.chat-input-area)');
+  if(headers.length > 1) headers[0].remove();
+
+  if(!msgs.length) {
+    chatEl.innerHTML = `<p style="text-align:center;color:var(--gris-text);padding:40px 20px;font-size:0.85rem">Démarrez la conversation avec <strong>${partner.firstName}</strong> !</p>`;
+  } else {
+    chatEl.innerHTML = msgs.map(m => {
+      const isSent = m.from === uid;
+      const time = new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="chat-msg ${isSent ? 'sent' : 'recv'}">
+        <div class="chat-bubble">${m.text}</div>
+        <div class="chat-time">${time}</div>
+      </div>`;
+    }).join('');
+  }
   chatEl.scrollTop = chatEl.scrollHeight;
-  renderConvList();
+  updateHeader(); // refresh unread count badge
 }
 
 function sendMessage() {
-  if(!state.currentUser||!activeConvUserId) return;
+  if(!state.currentUser || !activeConvUserId) {
+    showToast('⚠️ Sélectionnez une conversation');
+    return;
+  }
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if(!text) return;
-  state.messages.push({id:'m'+Date.now(),from:state.currentUser.id,to:activeConvUserId,text,date:new Date().toISOString()});
+  const msg = {
+    id: 'm' + Date.now(),
+    from: state.currentUser.id,
+    to: activeConvUserId,
+    text,
+    date: new Date().toISOString(),
+    read: false
+  };
+  state.messages.push(msg);
   saveLocal();
   input.value = '';
-  openConversation(activeConvUserId);
+  // Refresh the conversation display
+  const uid = state.currentUser.id;
+  const pid = activeConvUserId;
+  const msgs = state.messages.filter(m =>
+    (m.from === uid && m.to === pid) || (m.from === pid && m.to === uid)
+  );
+  const chatEl = document.getElementById('chatMessages');
+  chatEl.innerHTML = msgs.map(m => {
+    const isSent = m.from === uid;
+    const time = new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="chat-msg ${isSent ? 'sent' : 'recv'}">
+      <div class="chat-bubble">${m.text}</div>
+      <div class="chat-time">${time}</div>
+    </div>`;
+  }).join('');
+  chatEl.scrollTop = chatEl.scrollHeight;
+  // Update conv list preview
+  const convItems = document.querySelectorAll('.conv-item .conv-preview');
+  convItems.forEach(el => {
+    const parent = el.closest('.conv-item');
+    if(parent && parent.onclick && parent.onclick.toString().includes(`'${pid}'`)) {
+      el.textContent = text;
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════
@@ -1175,7 +1661,7 @@ function renderAdminCategories() {
       <span class="cat-icon">${cat.icon}</span>
       <span class="cat-name">${cat.name}</span>
       <div class="cat-actions">
-        <button class="icon-btn danger" onclick="deleteCategory(${cat.id})">🗑️</button>
+        <button class="icon-btn danger" onclick="deleteCategory('${cat.id}')">🗑️</button>
       </div>
     </li>
   `).join('');
@@ -1208,21 +1694,21 @@ function deleteCategory(id) {
 function renderAdminAds() {
   document.getElementById('adminAdsBody').innerHTML = state.ads.map(ad=>`
     <tr>
-      <td><strong>${ad.emoji} ${ad.title}</strong></td>
+      <td><strong>${ad.emoji||'📦'} ${ad.title}</strong></td>
       <td>${ad.author}</td>
       <td>${formatPrice(ad.price)} FCFA</td>
       <td>${ad.city}</td>
       <td><span class="status-badge ${ad.active?'status-active':'status-pending'}">${ad.active?'Active':'Désactivée'}</span></td>
       <td>
-        <button class="icon-btn" onclick="toggleAdStatus(${ad.id})">${ad.active?'🔴':'🟢'}</button>
-        <button class="icon-btn danger" onclick="adminDeleteAd(${ad.id})">🗑️</button>
+        <button class="icon-btn" onclick="toggleAdStatus('${ad.id}')">${ad.active?'🔴':'🟢'}</button>
+        <button class="icon-btn danger" onclick="adminDeleteAd('${ad.id}')">🗑️</button>
       </td>
     </tr>
   `).join('');
 }
 
 function toggleAdStatus(id) {
-  const ad = state.ads.find(a=>a.id===id);
+  const ad = state.ads.find(a => a.id === id);
   if(ad) { toggleAdFirebase(id, !ad.active); }
 }
 
@@ -1237,15 +1723,15 @@ function renderAdminUsers() {
       <td><div class="avatar-sm">${u.firstName[0]}${u.lastName[0]}</div> ${u.firstName} ${u.lastName} ${u.isAdmin?'👑':''}</td>
       <td>${u.email}</td>
       <td>${state.ads.filter(a=>a.authorId===u.id).length}</td>
-      <td>${u.date}</td>
-      <td>${!u.isAdmin?`<button class="icon-btn danger" onclick="adminDeleteUser(${u.id})">🗑️</button>`:'—'}</td>
+      <td>${u.date||'—'}</td>
+      <td>${!u.isAdmin?`<button class="icon-btn danger" onclick="adminDeleteUser('${u.id}')">🗑️</button>`:'—'}</td>
     </tr>
   `).join('');
 }
 
 function adminDeleteUser(id) {
-  if(id===state.currentUser?.id) { showToast('❌ Vous ne pouvez pas supprimer votre compte'); return; }
-  state.users = state.users.filter(u=>u.id!==id);
+  if(id === state.currentUser?.id) { showToast('❌ Vous ne pouvez pas supprimer votre compte'); return; }
+  state.users = state.users.filter(u => u.id !== id);
   saveLocal();
   renderAdminUsers();
   showToast('🗑️ Utilisateur supprimé');
@@ -1272,8 +1758,9 @@ function openModal(id) {
   if(id==='modalProfile') { openProfileModal(); return; }
   if(id==='modalMyAds') { openMyAds(); return; }
   if(id==='modalMessages') {
+    if(!state.currentUser) { openModal('modalAuth'); return; }
     document.getElementById(id).classList.remove('hidden');
-    renderConvList();
+    renderConvList(null);
     return;
   }
   document.getElementById(id).classList.remove('hidden');
@@ -1298,17 +1785,10 @@ function showToast(msg) {
 // ═══════════════════════════════════════════════════
 Object.assign(window, {
   filterCategory, filterCity, doSearch, openDetail, submitAd,
-  doLogin, doRegister, doLogout, switchAuthTab,
+  triggerSlot, loadSlotPhoto, removeSlot,
+  doLogin, doRegister, doLogout, switchAuthTab, showForgotPassword, showLoginTab, doForgotPassword,
   openModal, closeModal, populateCategorySelect,
   openAdminPanel, switchAdminTab, addCategory, deleteCategory,
   toggleAdStatus, adminDeleteAd, adminDeleteUser, applySettings,
-  renderConvList, openConversation, sendMessage,
-  openProfileModal, openMyAds, deleteMyAd, toggleFav, showToast,
-  renderAdminCategories, renderAdminAds, renderAdminUsers
-});
-
-// START
-init();
-</script>
-</body>
-</html>
+  renderConvList, openConversation, sendMessage, openContactMessage,
+  openProfileModal, saveP
