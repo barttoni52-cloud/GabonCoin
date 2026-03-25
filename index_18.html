@@ -44,8 +44,7 @@
     text-decoration: none; color: white;
     flex-shrink: 0;
   }
-  .logo-flag { display: flex; height: 32px; width: 26px; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
-  .logo-flag span { flex: 1; }
+  .logo-svg { height: 48px; width: auto; flex-shrink: 0; }
   .logo-text { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; letter-spacing: -1px; }
   .logo-text span { color: var(--jaune); }
   .logo-sub { font-size: 0.65rem; opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; margin-top: -4px; }
@@ -300,11 +299,24 @@
 <header>
   <div class="header-top">
     <a class="logo" href="#" onclick="showSection('home')">
-      <div class="logo-flag">
-        <span style="background:var(--vert)"></span>
-        <span style="background:var(--jaune)"></span>
-        <span style="background:var(--bleu)"></span>
-      </div>
+      <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gGradH" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#009e60"/>
+            <stop offset="100%" style="stop-color:#007a4a"/>
+          </linearGradient>
+        </defs>
+        <path d="M100 12 A88 88 0 0 1 188 100" fill="none" stroke="#009e60" stroke-width="12" stroke-linecap="round"/>
+        <path d="M188 100 A88 88 0 0 1 100 188" fill="none" stroke="#fcd116" stroke-width="12" stroke-linecap="round"/>
+        <path d="M100 188 A88 88 0 0 1 12 100" fill="none" stroke="#003082" stroke-width="12" stroke-linecap="round"/>
+        <path d="M12 100 A88 88 0 0 1 100 12" fill="none" stroke="#009e60" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="100" cy="100" r="72" fill="white"/>
+        <text x="100" y="138" text-anchor="middle" font-family="Georgia,serif" font-size="96" font-weight="700" fill="url(#gGradH)">G</text>
+        <rect x="102" y="90" width="34" height="10" rx="3" fill="#fcd116"/>
+        <circle cx="88" cy="162" r="5" fill="#009e60"/>
+        <circle cx="100" cy="162" r="5" fill="#fcd116"/>
+        <circle cx="112" cy="162" r="5" fill="#003082"/>
+      </svg>
       <div>
         <div class="logo-text">Gabon<span>Coin</span></div>
         <div class="logo-sub">Petites Annonces</div>
@@ -494,7 +506,7 @@
           <label>Mot de passe</label>
           <input type="password" id="loginPass" placeholder="••••••••">
         </div>
-        <p class="form-hint" style="margin-bottom:10px">Compte admin : <strong>admin@gaboncoin.ga</strong> / <strong>admin123</strong></p>
+        <p class="form-hint" style="margin-bottom:10px">Compte admin : <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a3c2c7cecacde3c4c2c1cccdc0cccacd8dc4c2">[email&#160;protected]</a></strong> / <strong>admin123</strong></p>
         <button class="btn btn-green" style="width:100%" onclick="doLogin()">Se connecter</button>
       </div>
       <div id="authRegister" style="display:none">
@@ -641,58 +653,135 @@
   </div>
 </div>
 
-<script>
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
 // ═══════════════════════════════════════════════════
-//  STATE
+//  FIREBASE CONFIG
 // ═══════════════════════════════════════════════════
-let state = JSON.parse(localStorage.getItem('gaboncoin') || 'null') || {
+const firebaseConfig = {
+  apiKey: "AIzaSyCgaOh3Sf9ly8aDP8JBSN2Uk9t2aJOdM1E",
+  authDomain: "gaboncoin.firebaseapp.com",
+  projectId: "gaboncoin",
+  storageBucket: "gaboncoin.firebasestorage.app",
+  messagingSenderId: "787213550717",
+  appId: "1:787213550717:web:efa8c00b477ff8c641dd14"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ═══════════════════════════════════════════════════
+//  STATE LOCAL (utilisateurs, session, UI)
+// ═══════════════════════════════════════════════════
+let state = {
   categories: [
-    {id:1, icon:'📱', name:'Téléphones & Tablettes'},
-    {id:2, icon:'🚗', name:'Véhicules'},
-    {id:3, icon:'🏠', name:'Immobilier'},
-    {id:4, icon:'💻', name:'Informatique'},
-    {id:5, icon:'👕', name:'Mode & Beauté'},
-    {id:6, icon:'🛋️', name:'Maison & Jardin'},
-    {id:7, icon:'🌾', name:'Agriculture'},
-    {id:8, icon:'💼', name:'Emploi & Services'},
-    {id:9, icon:'🎸', name:'Loisirs & Sport'},
+    {id:'cat1', icon:'📱', name:'Téléphones & Tablettes'},
+    {id:'cat2', icon:'🚗', name:'Véhicules'},
+    {id:'cat3', icon:'🏠', name:'Immobilier'},
+    {id:'cat4', icon:'💻', name:'Informatique'},
+    {id:'cat5', icon:'👕', name:'Mode & Beauté'},
+    {id:'cat6', icon:'🛋️', name:'Maison & Jardin'},
+    {id:'cat7', icon:'🌾', name:'Agriculture'},
+    {id:'cat8', icon:'💼', name:'Emploi & Services'},
+    {id:'cat9', icon:'🎸', name:'Loisirs & Sport'},
   ],
-  ads: [
-    {id:1,title:"iPhone 13 Pro Max 256Go",price:350000,category:1,city:"Libreville",condition:"Très bon état",desc:"iPhone en parfait état, débloqué tous opérateurs. Batterie 89%. Vendu avec chargeur original.",emoji:"📱",author:"Jean Nguema",authorId:2,date:"2024-01-15",active:true},
-    {id:2,title:"Toyota Corolla 2018 essence",price:8500000,category:2,city:"Port-Gentil",condition:"Bon état",desc:"Voiture bien entretenue, CT valide. Kilométrage : 87 000 km. Couleur blanche.",emoji:"🚗",author:"Marie Obame",authorId:3,date:"2024-01-14",active:true},
-    {id:3,title:"Appartement F3 Batterie 4",price:280000,category:3,city:"Libreville",condition:"Bon état",desc:"Bel appartement de 3 pièces, sécurisé, parking, gardien. Loyer mensuel.",emoji:"🏠",author:"Pierre Mba",authorId:4,date:"2024-01-13",active:true},
-    {id:4,title:"MacBook Pro M1 2021",price:900000,category:4,city:"Libreville",condition:"Très bon état",desc:"MacBook Pro 13 pouces, puce M1, 8Go RAM, 256Go SSD. Peu utilisé.",emoji:"💻",author:"Sophie Ekomo",authorId:5,date:"2024-01-12",active:true},
-    {id:5,title:"Robe traditionnelle wax",price:45000,category:5,city:"Franceville",condition:"Neuf",desc:"Magnifique robe en tissu wax gabonais. Taille 38/40. Jamais portée.",emoji:"👕",author:"Aline Mouele",authorId:6,date:"2024-01-11",active:true},
-    {id:6,title:"Moto Yamaha R15 2020",price:1200000,category:2,city:"Oyem",condition:"Bon état",desc:"Moto sportive en excellent état, entretien régulier. Documents à jour.",emoji:"🏍️",author:"Eric Nzamba",authorId:7,date:"2024-01-10",active:true},
-    {id:7,title:"Canapé 3 places velours",price:120000,category:6,city:"Libreville",condition:"Très bon état",desc:"Canapé luxueux couleur gris anthracite, très confortable. Acheté il y a 1 an.",emoji:"🛋️",author:"Jean Nguema",authorId:2,date:"2024-01-09",active:true},
-    {id:8,title:"Terrain 500m² à Nkembo",price:25000000,category:3,city:"Libreville",condition:"Neuf",desc:"Beau terrain viabilisé, titre foncier disponible, zone résidentielle calme.",emoji:"🌳",author:"Rémy Assoumou",authorId:8,date:"2024-01-08",active:true},
-  ],
-  users: [
-    {id:1,firstName:"Admin",lastName:"GabonCoin",email:"admin@gaboncoin.ga",pass:"admin123",phone:"+241 00 00 00 00",date:"2023-01-01",isAdmin:true},
-    {id:2,firstName:"Jean",lastName:"Nguema",email:"jean@email.ga",pass:"pass123",phone:"+241 06 11 22 33",date:"2023-03-15",isAdmin:false},
-    {id:3,firstName:"Marie",lastName:"Obame",email:"marie@email.ga",pass:"pass123",phone:"+241 07 44 55 66",date:"2023-05-20",isAdmin:false},
-  ],
-  messages: [
-    {id:1,from:2,to:1,adId:1,text:"Bonjour, est-ce que le téléphone est encore disponible ?",date:"2024-01-15T10:30:00"},
-    {id:2,from:1,to:2,adId:1,text:"Oui, toujours disponible !",date:"2024-01-15T10:45:00"},
-    {id:3,from:3,to:1,adId:2,text:"Quel est le kilométrage exact de la voiture ?",date:"2024-01-14T14:00:00"},
-  ],
-  currentUser: null,
+  ads: [],
+  users: JSON.parse(localStorage.getItem('gc_users') || '[{"id":"u1","firstName":"Admin","lastName":"GabonCoin","email":"admin@gaboncoin.ga","pass":"admin123","phone":"+241 00 00 00 00","date":"2023-01-01","isAdmin":true}]'),
+  messages: JSON.parse(localStorage.getItem('gc_messages') || '[]'),
+  currentUser: JSON.parse(localStorage.getItem('gc_session') || 'null'),
   activeCategory: null,
   activeCity: null,
 };
 
-function save() { localStorage.setItem('gaboncoin', JSON.stringify(state)); }
+function saveLocal() {
+  localStorage.setItem('gc_users', JSON.stringify(state.users));
+  localStorage.setItem('gc_messages', JSON.stringify(state.messages));
+  if(state.currentUser) localStorage.setItem('gc_session', JSON.stringify(state.currentUser));
+  else localStorage.removeItem('gc_session');
+}
+
+// ═══════════════════════════════════════════════════
+//  FIREBASE — ANNONCES (lecture temps réel)
+// ═══════════════════════════════════════════════════
+function listenAds() {
+  const q = query(collection(db, 'annonces'), orderBy('date', 'desc'));
+  onSnapshot(q, (snapshot) => {
+    state.ads = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+    renderAds();
+    updateStats();
+    updateCityCounts();
+  });
+}
+
+async function saveAdToFirebase(ad) {
+  try {
+    await addDoc(collection(db, 'annonces'), ad);
+    showToast('✅ Annonce publiée sur Firebase !');
+  } catch(e) {
+    showToast('❌ Erreur Firebase : ' + e.message);
+  }
+}
+
+async function deleteAdFromFirebase(id) {
+  try {
+    await deleteDoc(doc(db, 'annonces', id));
+    showToast('🗑️ Annonce supprimée');
+  } catch(e) {
+    showToast('❌ Erreur : ' + e.message);
+  }
+}
+
+async function toggleAdFirebase(id, active) {
+  try {
+    await updateDoc(doc(db, 'annonces', id), { active });
+  } catch(e) {
+    showToast('❌ Erreur : ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  FIREBASE — CATEGORIES
+// ═══════════════════════════════════════════════════
+async function loadCategories() {
+  try {
+    const snap = await getDocs(collection(db, 'categories'));
+    if(!snap.empty) {
+      state.categories = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    } else {
+      for(const cat of state.categories) {
+        await setDoc(doc(db, 'categories', cat.id), {icon: cat.icon, name: cat.name});
+      }
+    }
+    renderNav();
+    populateCategorySelect();
+  } catch(e) { console.log('Categories local fallback'); renderNav(); }
+}
+
+async function saveCategoryToFirebase(cat) {
+  await setDoc(doc(db, 'categories', cat.id), {icon: cat.icon, name: cat.name});
+}
+
+async function deleteCategoryFromFirebase(id) {
+  await deleteDoc(doc(db, 'categories', id));
+}
 
 // ═══════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════
 function init() {
-  renderNav();
-  renderAds();
-  updateStats();
+  loadCategories();
+  listenAds();
   updateHeader();
 }
+
+// ═══════════════════════════════════════════════════
+//  EXPOSE FUNCTIONS TO GLOBAL SCOPE (needed for onclick handlers)
+// ═══════════════════════════════════════════════════
+window.state = state;
+window.saveLocal = saveLocal;
 
 // ═══════════════════════════════════════════════════
 //  NAV
@@ -845,27 +934,23 @@ function submitAd() {
   const desc = document.getElementById('postDesc').value.trim();
   if(!title || !price || !desc) { showToast('⚠️ Veuillez remplir tous les champs obligatoires'); return; }
   const newAd = {
-    id: Date.now(),
     title,
     price,
-    category: parseInt(document.getElementById('postCategory').value),
+    category: document.getElementById('postCategory').value,
     city: document.getElementById('postCity').value,
     condition: document.getElementById('postCondition').value,
     desc,
     emoji: document.getElementById('postEmoji').value,
     author: state.currentUser.firstName + ' ' + state.currentUser.lastName,
     authorId: state.currentUser.id,
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString(),
     active: true,
   };
-  state.ads.unshift(newAd);
-  save();
+  saveAdToFirebase(newAd);
   closeModal('modalPost');
-  renderAds();
   document.getElementById('postTitle').value='';
   document.getElementById('postPrice').value='';
   document.getElementById('postDesc').value='';
-  showToast('✅ Annonce publiée avec succès !');
 }
 
 // ═══════════════════════════════════════════════════
@@ -884,7 +969,7 @@ function doLogin() {
   const user = state.users.find(u=>u.email===email && u.pass===pass);
   if(!user) { showToast('❌ Email ou mot de passe incorrect'); return; }
   state.currentUser = user;
-  save();
+  saveLocal();
   closeModal('modalAuth');
   updateHeader();
   renderNav();
@@ -900,10 +985,10 @@ function doRegister() {
   const pass = document.getElementById('regPass').value;
   if(!firstName||!lastName||!email||!pass) { showToast('⚠️ Remplissez tous les champs'); return; }
   if(state.users.find(u=>u.email===email)) { showToast('❌ Email déjà utilisé'); return; }
-  const newUser = { id:Date.now(), firstName, lastName, email, pass, phone, date:new Date().toISOString().split('T')[0], isAdmin:false };
+  const newUser = { id:'u'+Date.now(), firstName, lastName, email, pass, phone, date:new Date().toISOString().split('T')[0], isAdmin:false };
   state.users.push(newUser);
   state.currentUser = newUser;
-  save();
+  saveLocal();
   closeModal('modalAuth');
   updateHeader();
   renderNav();
@@ -913,7 +998,7 @@ function doRegister() {
 
 function doLogout() {
   state.currentUser = null;
-  save();
+  saveLocal();
   closeModal('modalProfile');
   updateHeader();
   renderNav();
@@ -1004,11 +1089,9 @@ function openMyAds() {
 }
 
 function deleteMyAd(id) {
-  state.ads = state.ads.filter(a=>a.id!==id);
-  save();
-  openMyAds();
-  renderAds();
-  showToast('🗑️ Annonce supprimée');
+  deleteAdFromFirebase(id);
+  closeModal('modalMyAds');
+  setTimeout(openMyAds, 800);
 }
 
 // ═══════════════════════════════════════════════════
@@ -1060,8 +1143,8 @@ function sendMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if(!text) return;
-  state.messages.push({id:Date.now(),from:state.currentUser.id,to:activeConvUserId,text,date:new Date().toISOString()});
-  save();
+  state.messages.push({id:'m'+Date.now(),from:state.currentUser.id,to:activeConvUserId,text,date:new Date().toISOString()});
+  saveLocal();
   input.value = '';
   openConversation(activeConvUserId);
 }
@@ -1102,8 +1185,9 @@ function addCategory() {
   const icon = document.getElementById('newCatIcon').value.trim() || '📦';
   const name = document.getElementById('newCatName').value.trim();
   if(!name) { showToast('⚠️ Entrez un nom de catégorie'); return; }
-  state.categories.push({id:Date.now(), icon, name});
-  save();
+  const cat = {id:'cat'+Date.now(), icon, name};
+  state.categories.push(cat);
+  saveCategoryToFirebase(cat);
   document.getElementById('newCatIcon').value='';
   document.getElementById('newCatName').value='';
   renderAdminCategories();
@@ -1115,7 +1199,7 @@ function addCategory() {
 function deleteCategory(id) {
   if(state.ads.some(a=>a.category===id)) { showToast('⚠️ Des annonces utilisent cette catégorie'); return; }
   state.categories = state.categories.filter(c=>c.id!==id);
-  save();
+  deleteCategoryFromFirebase(id);
   renderAdminCategories();
   renderNav();
   showToast('🗑️ Catégorie supprimée');
@@ -1139,15 +1223,12 @@ function renderAdminAds() {
 
 function toggleAdStatus(id) {
   const ad = state.ads.find(a=>a.id===id);
-  if(ad) { ad.active=!ad.active; save(); renderAdminAds(); renderAds(); }
+  if(ad) { toggleAdFirebase(id, !ad.active); }
 }
 
 function adminDeleteAd(id) {
-  state.ads = state.ads.filter(a=>a.id!==id);
-  save();
-  renderAdminAds();
-  renderAds();
-  showToast('🗑️ Annonce supprimée');
+  deleteAdFromFirebase(id);
+  setTimeout(renderAdminAds, 800);
 }
 
 function renderAdminUsers() {
@@ -1165,7 +1246,7 @@ function renderAdminUsers() {
 function adminDeleteUser(id) {
   if(id===state.currentUser?.id) { showToast('❌ Vous ne pouvez pas supprimer votre compte'); return; }
   state.users = state.users.filter(u=>u.id!==id);
-  save();
+  saveLocal();
   renderAdminUsers();
   showToast('🗑️ Utilisateur supprimé');
 }
@@ -1213,8 +1294,20 @@ function showToast(msg) {
 }
 
 // ═══════════════════════════════════════════════════
-//  START
+//  EXPOSE ALL TO GLOBAL (onclick handlers)
 // ═══════════════════════════════════════════════════
+Object.assign(window, {
+  filterCategory, filterCity, doSearch, openDetail, submitAd,
+  doLogin, doRegister, doLogout, switchAuthTab,
+  openModal, closeModal, populateCategorySelect,
+  openAdminPanel, switchAdminTab, addCategory, deleteCategory,
+  toggleAdStatus, adminDeleteAd, adminDeleteUser, applySettings,
+  renderConvList, openConversation, sendMessage,
+  openProfileModal, openMyAds, deleteMyAd, toggleFav, showToast,
+  renderAdminCategories, renderAdminAds, renderAdminUsers
+});
+
+// START
 init();
 </script>
 </body>
