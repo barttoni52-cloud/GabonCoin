@@ -293,22 +293,94 @@
   .profile-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; }
   .profile-email { font-size: 0.8rem; opacity: 0.8; }
 
+  /* ── STAT CARDS ── */
+  .stat-card { padding: 16px; border-radius: 12px; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; color: var(--noir); }
+  .stat-label { font-size: 0.78rem; color: var(--gris-text); margin-top: 2px; font-weight: 500; }
+
   /* ── NO ADS ── */
   .no-ads { text-align: center; padding: 48px 20px; }
   .no-ads p { color: var(--gris-text); margin-top: 10px; }
 
-  /* ── RESPONSIVE ── */
+  /* ── RESPONSIVE MOBILE ── */
   @media(max-width:768px) {
-    .header-top { flex-wrap: wrap; }
-    .search-bar { order: 3; max-width: 100%; }
+
+    /* Header */
+    .header-top { flex-wrap: wrap; padding: 10px 14px; gap: 10px; }
+    .logo-text { font-size: 1.25rem; }
+    .logo-sub { display: none; }
+    .logo-svg { height: 38px; }
+    .search-bar { order: 3; max-width: 100%; width: 100%; }
+    .header-actions { gap: 6px; }
+    .header-actions .btn { padding: 7px 12px; font-size: 0.78rem; }
+    /* Cacher le texte "Messages" sur mobile, garder juste l'emoji */
+    .header-actions .btn-outline:first-child { font-size: 0; }
+    .header-actions .btn-outline:first-child::before { content: '💬'; font-size: 1rem; }
+
+    /* Nav tabs */
+    .nav-tab { padding: 10px 12px; font-size: 0.78rem; }
+    .nav-tab .tab-icon { font-size: 0.9rem; }
+
+    /* Hero */
+    .hero { padding: 24px 16px; }
+    .hero h1 { font-size: 1.2rem; }
+    .hero p { font-size: 0.85rem; }
+    .hero-stats { gap: 16px; }
+    .hero-stat strong { font-size: 1.2rem; }
+    .hero-stat span { font-size: 0.7rem; }
+
+    /* Layout */
+    .main { padding: 12px; flex-direction: column; }
     .sidebar { display: none; }
-    .main { padding: 16px; }
-    .hero h1 { font-size: 1.5rem; }
-    .hero-stats { gap: 20px; }
+    .content { width: 100%; }
+
+    /* Ads grid : 2 colonnes sur mobile */
+    .ads-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .ad-img { height: 120px; }
+    .ad-title { font-size: 0.82rem; }
+    .ad-price { font-size: 0.95rem; }
+    .ad-meta { font-size: 0.7rem; gap: 4px; }
+    .ad-body { padding: 8px 10px; }
+
+    /* Modals */
+    .modal { border-radius: 14px 14px 0 0; max-height: 95vh; }
+    .modal-overlay { align-items: flex-end; padding: 0; }
+    .modal-wide { max-width: 100%; }
+    .modal-header { padding: 16px 18px 12px; }
+    .modal-body { padding: 16px 18px; }
+    .modal-footer { padding: 12px 18px 16px; }
+
+    /* Formulaires */
     .form-row { grid-template-columns: 1fr; }
+    .form-group input, .form-group select, .form-group textarea { font-size: 16px; } /* évite le zoom auto iOS */
+
+    /* Photo slots */
+    .photo-slot { height: 90px; }
+
+    /* Messagerie */
     .messages-layout { flex-direction: column; height: auto; }
-    .conv-list { width: 100%; border-right: none; border-bottom: 1.5px solid var(--gris-mid); height: 140px; }
-    .chat-area { min-height: 320px; }
+    .conv-list { width: 100%; border-right: none; border-bottom: 1.5px solid var(--gris-mid); height: 130px; overflow-x: auto; display: flex; flex-direction: row; }
+    .conv-item { min-width: 140px; border-bottom: none; border-right: 1px solid var(--gris-mid); }
+    .chat-area { min-height: 300px; }
+
+    /* Galerie */
+    #detailMainPhoto { height: 220px !important; }
+
+    /* Admin tables : scroll horizontal */
+    .ads-table, .users-table { font-size: 0.75rem; display: block; overflow-x: auto; white-space: nowrap; }
+
+    /* Toolbar */
+    .toolbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .sort-select { width: 100%; }
+
+    /* Boutons header : "Publier" toujours visible */
+    .btn-yellow { padding: 7px 14px; font-size: 0.82rem; }
+  }
+
+  /* Extra small : 1 colonne sous 380px */
+  @media(max-width:380px) {
+    .ads-grid { grid-template-columns: 1fr; }
+    .header-actions .btn-outline { display: none; }
   }
 </style>
 </head>
@@ -440,10 +512,10 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Prix (FCFA) *</label>
+          <label id="postPriceLabel">Prix (FCFA) *</label>
           <input type="number" id="postPrice" placeholder="0">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="conditionGroup">
           <label>État</label>
           <select id="postCondition">
             <option value="Neuf">Neuf</option>
@@ -649,69 +721,127 @@
 
 <!-- ═══════════ MODAL: ADMIN ═══════════ -->
 <div class="modal-overlay hidden" id="modalAdmin">
-  <div class="modal modal-wide">
-    <div class="modal-header">
-      <h2>⚙️ Panneau d'administration</h2>
-      <button class="modal-close" onclick="closeModal('modalAdmin')">✕</button>
+  <div class="modal modal-wide" style="max-width:900px">
+    <div class="modal-header" style="background:linear-gradient(135deg,var(--bleu),#001f5c);color:white;border-radius:18px 18px 0 0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.4rem">⚙️</span>
+        <div>
+          <h2 style="color:white;font-size:1.1rem">Panneau d'administration</h2>
+          <p style="font-size:0.75rem;opacity:0.7;margin-top:2px">GabonCoin — Espace Admin</p>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalAdmin')" style="color:white">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="admin-tabs">
-        <div class="admin-tab active" onclick="switchAdminTab('cats',this)">📂 Catégories</div>
+    <div class="modal-body" style="padding:0">
+
+      <!-- TABS -->
+      <div class="admin-tabs" style="padding:0 20px;border-bottom:1.5px solid var(--gris-mid);overflow-x:auto;white-space:nowrap">
+        <div class="admin-tab active" onclick="switchAdminTab('dashboard',this)">📊 Tableau de bord</div>
         <div class="admin-tab" onclick="switchAdminTab('ads',this)">📢 Annonces</div>
         <div class="admin-tab" onclick="switchAdminTab('users',this)">👥 Utilisateurs</div>
+        <div class="admin-tab" onclick="switchAdminTab('cats',this)">📂 Catégories</div>
         <div class="admin-tab" onclick="switchAdminTab('settings',this)">🎨 Apparence</div>
       </div>
 
-      <!-- CATEGORIES -->
-      <div class="admin-section active" id="adminCats">
-        <p style="font-size:0.85rem;color:var(--gris-text);margin-bottom:14px">Glissez pour réordonner. Les changements sont visibles immédiatement.</p>
-        <ul class="category-list" id="adminCatList"></ul>
-        <div class="add-cat-form">
-          <input type="text" id="newCatIcon" placeholder="Emoji 🏠" maxlength="4" style="width:70px;flex:none">
-          <input type="text" id="newCatName" placeholder="Nom de la catégorie">
-          <button class="btn btn-green btn-sm" onclick="addCategory()">+ Ajouter</button>
-        </div>
-      </div>
+      <div style="padding:20px">
 
-      <!-- ADS MANAGEMENT -->
-      <div class="admin-section" id="adminAds">
-        <table class="ads-table">
-          <thead><tr><th>Annonce</th><th>Auteur</th><th>Prix</th><th>Ville</th><th>Statut</th><th>Actions</th></tr></thead>
-          <tbody id="adminAdsBody"></tbody>
-        </table>
-      </div>
-
-      <!-- USERS -->
-      <div class="admin-section" id="adminUsers">
-        <table class="users-table">
-          <thead><tr><th>Utilisateur</th><th>Email</th><th>Annonces</th><th>Inscrit le</th><th>Actions</th></tr></thead>
-          <tbody id="adminUsersBody"></tbody>
-        </table>
-      </div>
-
-      <!-- SETTINGS -->
-      <div class="admin-section" id="adminSettings">
-        <div class="form-group">
-          <label>Nom du site</label>
-          <input type="text" id="settingSiteName" value="GabonCoin">
+        <!-- ── TABLEAU DE BORD ── -->
+        <div class="admin-section active" id="adminDashboard">
+          <!-- Cartes stats -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+            <div class="stat-card" style="background:var(--vert-light);border-left:4px solid var(--vert)">
+              <div class="stat-num" id="dashTotalAds">0</div>
+              <div class="stat-label">Annonces totales</div>
+            </div>
+            <div class="stat-card" style="background:var(--bleu-light);border-left:4px solid var(--bleu)">
+              <div class="stat-num" id="dashActiveAds">0</div>
+              <div class="stat-label">Annonces actives</div>
+            </div>
+            <div class="stat-card" style="background:#fff8e1;border-left:4px solid #f59e0b">
+              <div class="stat-num" id="dashTotalUsers">0</div>
+              <div class="stat-label">Utilisateurs</div>
+            </div>
+            <div class="stat-card" style="background:#fde8e8;border-left:4px solid #e53935">
+              <div class="stat-num" id="dashBanned">0</div>
+              <div class="stat-label">Bannis</div>
+            </div>
+          </div>
+          <!-- Annonces récentes -->
+          <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:10px;color:#444">📢 5 dernières annonces</h3>
+          <div id="dashRecentAds" style="margin-bottom:20px"></div>
+          <!-- Utilisateurs récents -->
+          <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:10px;color:#444">👥 5 derniers inscrits</h3>
+          <div id="dashRecentUsers"></div>
         </div>
-        <div class="form-group">
-          <label>Slogan</label>
-          <input type="text" id="settingSlogan" value="Le marché de référence au Gabon">
+
+        <!-- ── ANNONCES ── -->
+        <div class="admin-section" id="adminAds">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <input type="text" id="adminAdsSearch" placeholder="🔍 Rechercher une annonce..." oninput="renderAdminAds()" style="flex:1;min-width:180px;border:1.5px solid var(--gris-mid);border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:0.85rem">
+            <select id="adminAdsFilter" onchange="renderAdminAds()" style="border:1.5px solid var(--gris-mid);border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:0.85rem">
+              <option value="all">Toutes</option>
+              <option value="active">Actives</option>
+              <option value="inactive">Désactivées</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="ads-table">
+              <thead><tr><th>Annonce</th><th>Auteur</th><th>Prix</th><th>Ville</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+              <tbody id="adminAdsBody"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="form-row">
+
+        <!-- ── UTILISATEURS ── -->
+        <div class="admin-section" id="adminUsers">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+            <input type="text" id="adminUsersSearch" placeholder="🔍 Rechercher un utilisateur..." oninput="renderAdminUsers()" style="flex:1;min-width:180px;border:1.5px solid var(--gris-mid);border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:0.85rem">
+            <button class="btn btn-green btn-sm" onclick="exportUsersCSV()">⬇️ Exporter CSV</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="users-table">
+              <thead><tr><th>Utilisateur</th><th>Email</th><th>Téléphone</th><th>Annonces</th><th>Inscrit le</th><th>Statut</th><th>Actions</th></tr></thead>
+              <tbody id="adminUsersBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── CATÉGORIES ── -->
+        <div class="admin-section" id="adminCats">
+          <p style="font-size:0.85rem;color:var(--gris-text);margin-bottom:14px">Les changements sont visibles immédiatement sur le site.</p>
+          <ul class="category-list" id="adminCatList"></ul>
+          <div class="add-cat-form">
+            <input type="text" id="newCatIcon" placeholder="Emoji" maxlength="4" style="width:70px;flex:none">
+            <input type="text" id="newCatName" placeholder="Nom de la catégorie">
+            <button class="btn btn-green btn-sm" onclick="addCategory()">+ Ajouter</button>
+          </div>
+        </div>
+
+        <!-- ── APPARENCE ── -->
+        <div class="admin-section" id="adminSettings">
           <div class="form-group">
-            <label>Couleur principale</label>
-            <input type="color" id="settingColorPrimary" value="#009e60" style="height:42px;padding:4px">
+            <label>Nom du site</label>
+            <input type="text" id="settingSiteName" value="GabonCoin">
           </div>
           <div class="form-group">
-            <label>Couleur secondaire</label>
-            <input type="color" id="settingColorSecondary" value="#003082" style="height:42px;padding:4px">
+            <label>Slogan</label>
+            <input type="text" id="settingSlogan" value="Le marché de référence au Gabon">
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Couleur principale</label>
+              <input type="color" id="settingColorPrimary" value="#009e60" style="height:42px;padding:4px">
+            </div>
+            <div class="form-group">
+              <label>Couleur secondaire</label>
+              <input type="color" id="settingColorSecondary" value="#003082" style="height:42px;padding:4px">
+            </div>
+          </div>
+          <button class="btn btn-green" onclick="applySettings()">Appliquer les changements</button>
         </div>
-        <button class="btn btn-green" onclick="applySettings()">Appliquer les changements</button>
-      </div>
-    </div>
+
+      </div><!-- /padding -->
+    </div><!-- /modal-body -->
   </div>
 </div>
 
@@ -748,7 +878,7 @@ let state = {
     {id:'cat4', icon:'💻', name:'Informatique'},
     {id:'cat5', icon:'👕', name:'Mode & Beauté'},
     {id:'cat6', icon:'🛋️', name:'Maison & Jardin'},
-    {id:'cat7', icon:'🌾', name:'Agriculture'},
+    {id:'cat7', icon:'📦', name:'Divers'},
     {id:'cat8', icon:'💼', name:'Emploi & Services'},
     {id:'cat9', icon:'🎸', name:'Loisirs & Sport'},
   ],
@@ -852,7 +982,15 @@ async function loadCategories() {
   try {
     const snap = await getDocs(collection(db, 'categories'));
     if(!snap.empty) {
-      state.categories = snap.docs.map(d => ({id: d.id, ...d.data()}));
+      let cats = snap.docs.map(d => ({id: d.id, ...d.data()}));
+      // Migration : Agriculture → Divers
+      for(const cat of cats) {
+        if(cat.name === 'Agriculture') {
+          await updateDoc(doc(db, 'categories', cat.id), {icon: '📦', name: 'Divers'});
+          cat.icon = '📦'; cat.name = 'Divers';
+        }
+      }
+      state.categories = cats;
     } else {
       for(const cat of state.categories) {
         await setDoc(doc(db, 'categories', cat.id), {icon: cat.icon, name: cat.name});
@@ -860,7 +998,7 @@ async function loadCategories() {
     }
     renderNav();
     populateCategorySelect();
-  } catch(e) { console.log('Categories local fallback'); renderNav(); }
+  } catch(e) { console.log('Categories local fallback:', e.message); renderNav(); populateCategorySelect(); }
 }
 
 async function saveCategoryToFirebase(cat) {
@@ -1219,6 +1357,40 @@ function populateCategorySelect() {
   const sel = document.getElementById('postCategory');
   if(!sel) return;
   sel.innerHTML = state.categories.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+  sel.onchange = () => adaptPostForm(sel.value);
+  adaptPostForm(sel.value);
+}
+
+function adaptPostForm(catId) {
+  const cat = state.categories.find(c => c.id === catId);
+  if(!cat) return;
+  const name = cat.name.toLowerCase();
+  const priceLabel    = document.getElementById('postPriceLabel');
+  const condGroup     = document.getElementById('conditionGroup');
+  const condSelect    = document.getElementById('postCondition');
+  const priceInput    = document.getElementById('postPrice');
+
+  // --- EMPLOI : salaire + pas d'état ---
+  if(name.includes('emploi')) {
+    priceLabel.textContent  = 'Salaire (FCFA) *';
+    priceInput.placeholder  = 'Ex: 150000';
+    condGroup.style.display = 'none';
+    condSelect.innerHTML    = '<option value="CDI">CDI</option><option value="CDD">CDD</option><option value="Freelance">Freelance</option><option value="Stage">Stage</option>';
+  }
+  // --- IMMOBILIER : Neuf / Ancien uniquement ---
+  else if(name.includes('immobilier')) {
+    priceLabel.textContent  = 'Prix / Loyer (FCFA) *';
+    priceInput.placeholder  = 'Ex: 250000';
+    condGroup.style.display = '';
+    condSelect.innerHTML    = '<option value="Neuf">Neuf</option><option value="Ancien">Ancien</option>';
+  }
+  // --- AUTRES : états classiques ---
+  else {
+    priceLabel.textContent  = 'Prix (FCFA) *';
+    priceInput.placeholder  = '0';
+    condGroup.style.display = '';
+    condSelect.innerHTML    = '<option value="Neuf">Neuf</option><option value="Très bon état">Très bon état</option><option value="Bon état">Bon état</option><option value="Occasion">Occasion</option>';
+  }
 }
 
 async function submitAd() {
@@ -1642,21 +1814,153 @@ function sendMessage() {
 // ═══════════════════════════════════════════════════
 function openAdminPanel() {
   if(!state.currentUser?.isAdmin) { showToast('❌ Accès réservé aux administrateurs'); return; }
-  renderAdminCategories();
+  renderAdminDashboard();
   renderAdminAds();
   renderAdminUsers();
-  openModal('modalAdmin');
+  renderAdminCategories();
+  document.getElementById('modalAdmin').classList.remove('hidden');
 }
 
 function switchAdminTab(tab, el) {
-  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('admin'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  const map = {dashboard:'adminDashboard', ads:'adminAds', users:'adminUsers', cats:'adminCats', settings:'adminSettings'};
+  const target = document.getElementById(map[tab]);
+  if(target) target.classList.add('active');
+}
+
+function renderAdminDashboard() {
+  const allAds = state.ads, activeAds = allAds.filter(a=>a.active);
+  const allUsers = state.users, banned = allUsers.filter(u=>u.banned);
+  document.getElementById('dashTotalAds').textContent   = allAds.length;
+  document.getElementById('dashActiveAds').textContent  = activeAds.length;
+  document.getElementById('dashTotalUsers').textContent = allUsers.length;
+  document.getElementById('dashBanned').textContent     = banned.length;
+  const recentAds = [...allAds].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  document.getElementById('dashRecentAds').innerHTML = recentAds.length ? `<div style="overflow-x:auto"><table class="ads-table">
+    <thead><tr><th>Annonce</th><th>Auteur</th><th>Prix</th><th>Statut</th><th>Actions</th></tr></thead>
+    <tbody>${recentAds.map(ad=>`<tr>
+      <td><strong>${ad.emoji||'📦'} ${ad.title}</strong></td>
+      <td>${ad.author||'—'}</td><td>${formatPrice(ad.price)} FCFA</td>
+      <td><span class="status-badge ${ad.active?'status-active':'status-pending'}">${ad.active?'Active':'Désactivée'}</span></td>
+      <td>
+        <button class="icon-btn" onclick="toggleAdStatus('${ad.id}')">${ad.active?'🔴':'🟢'}</button>
+        <button class="icon-btn danger" onclick="adminDeleteAd('${ad.id}')">🗑️</button>
+      </td></tr>`).join('')}</tbody></table></div>`
+    : '<p style="color:var(--gris-text);font-size:0.85rem">Aucune annonce.</p>';
+  const recentUsers = [...allUsers].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  document.getElementById('dashRecentUsers').innerHTML = recentUsers.length ? `<div style="overflow-x:auto"><table class="users-table">
+    <thead><tr><th>Nom</th><th>Email</th><th>Inscrit le</th><th>Statut</th></tr></thead>
+    <tbody>${recentUsers.map(u=>`<tr>
+      <td><div class="avatar-sm" style="display:inline-flex;margin-right:6px">${u.firstName[0]}${(u.lastName||'')[0]||''}</div>${u.firstName} ${u.lastName||''} ${u.isAdmin?'👑':''}</td>
+      <td>${u.email}</td><td>${u.date||'—'}</td>
+      <td><span class="status-badge ${u.banned?'status-pending':'status-active'}">${u.banned?'Banni':'Actif'}</span></td>
+    </tr>`).join('')}</tbody></table></div>`
+    : '<p style="color:var(--gris-text);font-size:0.85rem">Aucun utilisateur.</p>';
+}
+
+function renderAdminAds() {
+  const search = (document.getElementById('adminAdsSearch')?.value||'').toLowerCase();
+  const filter = document.getElementById('adminAdsFilter')?.value||'all';
+  let ads = [...state.ads];
+  if(filter==='active')   ads = ads.filter(a=>a.active);
+  if(filter==='inactive') ads = ads.filter(a=>!a.active);
+  if(search) ads = ads.filter(a=>a.title?.toLowerCase().includes(search)||a.author?.toLowerCase().includes(search));
+  ads.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('adminAdsBody').innerHTML = ads.length ? ads.map(ad=>`
+    <tr>
+      <td><strong>${ad.emoji||'📦'} ${ad.title}</strong><br><span style="font-size:0.75rem;color:var(--gris-text)">${getCatName(ad.category)}</span></td>
+      <td>${ad.author||'—'}</td><td>${formatPrice(ad.price)} FCFA</td>
+      <td>${ad.city||'—'}</td>
+      <td style="font-size:0.78rem">${(ad.date||'').slice(0,10)}</td>
+      <td><span class="status-badge ${ad.active?'status-active':'status-pending'}">${ad.active?'Active':'Désactivée'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="icon-btn" onclick="toggleAdStatus('${ad.id}')">${ad.active?'🔴':'🟢'}</button>
+        <button class="icon-btn danger" onclick="adminDeleteAd('${ad.id}')">🗑️</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--gris-text);padding:20px">Aucune annonce</td></tr>';
+}
+
+function toggleAdStatus(id) {
+  const ad = state.ads.find(a=>a.id===id);
+  if(ad) toggleAdFirebase(id, !ad.active);
+}
+function adminDeleteAd(id) {
+  if(!confirm('Supprimer définitivement cette annonce ?')) return;
+  deleteAdFromFirebase(id);
+  setTimeout(()=>{ renderAdminAds(); renderAdminDashboard(); }, 800);
+}
+
+function renderAdminUsers() {
+  const search = (document.getElementById('adminUsersSearch')?.value||'').toLowerCase();
+  let users = [...state.users];
+  if(search) users = users.filter(u=>u.firstName?.toLowerCase().includes(search)||u.lastName?.toLowerCase().includes(search)||u.email?.toLowerCase().includes(search));
+  users.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('adminUsersBody').innerHTML = users.length ? users.map(u=>`
+    <tr style="${u.banned?'opacity:0.55':''}">
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar-sm">${u.firstName[0]}${(u.lastName||'')[0]||''}</div>
+          <div><div style="font-weight:600;font-size:0.88rem">${u.firstName} ${u.lastName||''} ${u.isAdmin?'👑':''}</div>
+          <div style="font-size:0.75rem;color:var(--gris-text)">${u.phone||'—'}</div></div>
+        </div>
+      </td>
+      <td style="font-size:0.85rem">${u.email}</td>
+      <td style="font-size:0.85rem">${u.phone||'—'}</td>
+      <td style="text-align:center">${state.ads.filter(a=>a.authorId===u.id).length}</td>
+      <td style="font-size:0.78rem">${u.date||'—'}</td>
+      <td><span class="status-badge ${u.banned?'status-pending':'status-active'}">${u.banned?'Banni':'Actif'}</span></td>
+      <td style="white-space:nowrap">${!u.isAdmin?`
+        <button class="icon-btn ${u.banned?'':'danger'}" onclick="toggleBanUser('${u.id}')">${u.banned?'✅':'🚫'}</button>
+        <button class="icon-btn danger" onclick="adminDeleteUser('${u.id}')">🗑️</button>`:'—'}
+      </td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--gris-text);padding:20px">Aucun utilisateur</td></tr>';
+}
+
+async function toggleBanUser(id) {
+  const user = state.users.find(u=>u.id===id);
+  if(!user) return;
+  const newBanned = !user.banned;
+  if(!confirm(`${newBanned?'Bannir':'Débannir'} ${user.firstName} ${user.lastName||''} ?`)) return;
+  try {
+    await updateDoc(doc(db,'users',id), {banned: newBanned});
+    user.banned = newBanned;
+    showToast(newBanned ? `🚫 ${user.firstName} banni` : `✅ ${user.firstName} débanni`);
+    renderAdminUsers(); renderAdminDashboard();
+  } catch(e) { showToast('❌ '+e.message); }
+}
+
+function adminDeleteUser(id) {
+  const user = state.users.find(u=>u.id===id);
+  if(!user) return;
+  if(id===state.currentUser?.id) { showToast('❌ Impossible de supprimer votre propre compte'); return; }
+  if(!confirm(`Supprimer définitivement ${user.firstName} ${user.lastName||''} ?`)) return;
+  deleteDoc(doc(db,'users',id)).then(()=>{
+    state.users = state.users.filter(u=>u.id!==id);
+    renderAdminUsers(); renderAdminDashboard();
+    showToast('🗑️ Utilisateur supprimé');
+  }).catch(e=>showToast('❌ '+e.message));
+}
+
+function exportUsersCSV() {
+  const rows = [['Prénom','Nom','Email','Téléphone','Inscrit le','Annonces','Statut']];
+  state.users.forEach(u => rows.push([
+    u.firstName, u.lastName||'', u.email, u.phone||'',
+    u.date||'', state.ads.filter(a=>a.authorId===u.id).length,
+    u.banned?'Banni':(u.isAdmin?'Admin':'Actif')
+  ]));
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = `gaboncoin-utilisateurs-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('✅ Export CSV téléchargé !');
 }
 
 function renderAdminCategories() {
   const list = document.getElementById('adminCatList');
+  if(!list) return;
   list.innerHTML = state.categories.map(cat=>`
     <li class="category-item" data-id="${cat.id}">
       <span class="drag-handle">⠿</span>
@@ -1665,78 +1969,29 @@ function renderAdminCategories() {
       <div class="cat-actions">
         <button class="icon-btn danger" onclick="deleteCategory('${cat.id}')">🗑️</button>
       </div>
-    </li>
-  `).join('');
+    </li>`).join('');
 }
 
 function addCategory() {
-  const icon = document.getElementById('newCatIcon').value.trim() || '📦';
+  const icon = document.getElementById('newCatIcon').value.trim()||'📦';
   const name = document.getElementById('newCatName').value.trim();
-  if(!name) { showToast('⚠️ Entrez un nom de catégorie'); return; }
+  if(!name) { showToast('⚠️ Entrez un nom'); return; }
   const cat = {id:'cat'+Date.now(), icon, name};
   state.categories.push(cat);
   saveCategoryToFirebase(cat);
   document.getElementById('newCatIcon').value='';
   document.getElementById('newCatName').value='';
-  renderAdminCategories();
-  renderNav();
-  populateCategorySelect();
+  renderAdminCategories(); renderNav(); populateCategorySelect();
   showToast('✅ Catégorie ajoutée !');
 }
 
 function deleteCategory(id) {
   if(state.ads.some(a=>a.category===id)) { showToast('⚠️ Des annonces utilisent cette catégorie'); return; }
+  if(!confirm('Supprimer cette catégorie ?')) return;
   state.categories = state.categories.filter(c=>c.id!==id);
   deleteCategoryFromFirebase(id);
-  renderAdminCategories();
-  renderNav();
+  renderAdminCategories(); renderNav();
   showToast('🗑️ Catégorie supprimée');
-}
-
-function renderAdminAds() {
-  document.getElementById('adminAdsBody').innerHTML = state.ads.map(ad=>`
-    <tr>
-      <td><strong>${ad.emoji||'📦'} ${ad.title}</strong></td>
-      <td>${ad.author}</td>
-      <td>${formatPrice(ad.price)} FCFA</td>
-      <td>${ad.city}</td>
-      <td><span class="status-badge ${ad.active?'status-active':'status-pending'}">${ad.active?'Active':'Désactivée'}</span></td>
-      <td>
-        <button class="icon-btn" onclick="toggleAdStatus('${ad.id}')">${ad.active?'🔴':'🟢'}</button>
-        <button class="icon-btn danger" onclick="adminDeleteAd('${ad.id}')">🗑️</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function toggleAdStatus(id) {
-  const ad = state.ads.find(a => a.id === id);
-  if(ad) { toggleAdFirebase(id, !ad.active); }
-}
-
-function adminDeleteAd(id) {
-  deleteAdFromFirebase(id);
-  setTimeout(renderAdminAds, 800);
-}
-
-function renderAdminUsers() {
-  document.getElementById('adminUsersBody').innerHTML = state.users.map(u=>`
-    <tr>
-      <td><div class="avatar-sm">${u.firstName[0]}${u.lastName[0]}</div> ${u.firstName} ${u.lastName} ${u.isAdmin?'👑':''}</td>
-      <td>${u.email}</td>
-      <td>${state.ads.filter(a=>a.authorId===u.id).length}</td>
-      <td>${u.date||'—'}</td>
-      <td>${!u.isAdmin?`<button class="icon-btn danger" onclick="adminDeleteUser('${u.id}')">🗑️</button>`:'—'}</td>
-    </tr>
-  `).join('');
-}
-
-function adminDeleteUser(id) {
-  if(id === state.currentUser?.id) { showToast('❌ Vous ne pouvez pas supprimer votre compte'); return; }
-  state.users = state.users.filter(u => u.id !== id);
-  saveLocal();
-  renderAdminUsers();
-  showToast('🗑️ Utilisateur supprimé');
 }
 
 function applySettings() {
@@ -1791,14 +2046,14 @@ function showToast(msg) {
 // ═══════════════════════════════════════════════════
 Object.assign(window, {
   filterCategory, filterCity, doSearch, openDetail, submitAd,
-  triggerSlot, loadSlotPhoto, removeSlot,
+  triggerSlot, loadSlotPhoto, removeSlot, adaptPostForm,
   doLogin, doRegister, doLogout, switchAuthTab, showForgotPassword, showLoginTab, doForgotPassword,
   openModal, closeModal, populateCategorySelect,
   openAdminPanel, switchAdminTab, addCategory, deleteCategory,
-  toggleAdStatus, adminDeleteAd, adminDeleteUser, applySettings,
+  toggleAdStatus, adminDeleteAd, adminDeleteUser, toggleBanUser, exportUsersCSV, applySettings,
+  renderAdminDashboard, renderAdminAds, renderAdminUsers, renderAdminCategories,
   renderConvList, openConversation, sendMessage, openContactMessage,
   openProfileModal, saveProfile, openMyAds, deleteMyAd, toggleFav, showToast,
-  renderAdminCategories, renderAdminAds, renderAdminUsers,
   galleryNav, galleryGoTo, openLightbox, closeLightbox, lbNav, lbGoTo
 });
 
