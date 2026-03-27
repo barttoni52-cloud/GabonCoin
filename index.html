@@ -492,6 +492,16 @@
       <button class="modal-close" onclick="closeModal('modalPost')">✕</button>
     </div>
     <div class="modal-body">
+      <!-- BOUTON IMPORT FACEBOOK -->
+      <div style="background:linear-gradient(135deg,#1877f2,#0d5dbf);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openFbImport()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        <div>
+          <div style="color:white;font-weight:700;font-size:0.92rem">📥 Importer depuis Facebook</div>
+          <div style="color:rgba(255,255,255,0.8);font-size:0.75rem">Collez un lien Facebook Marketplace pour pré-remplir le formulaire</div>
+        </div>
+        <span style="margin-left:auto;color:white;font-size:1.2rem">›</span>
+      </div>
+
       <div class="form-group">
         <label>Titre de l'annonce *</label>
         <input type="text" id="postTitle" placeholder="Ex: iPhone 13 Pro Max 256Go">
@@ -842,6 +852,114 @@
 
       </div><!-- /padding -->
     </div><!-- /modal-body -->
+  </div>
+</div>
+
+<!-- ═══════════ MODAL: IMPORT FACEBOOK ═══════════ -->
+<div class="modal-overlay hidden" id="modalFbImport">
+  <div class="modal modal-wide">
+    <div class="modal-header" style="background:linear-gradient(135deg,#1877f2,#0d5dbf);border-radius:18px 18px 0 0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        <h2 style="color:white;font-size:1.1rem">Importer depuis Facebook</h2>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalFbImport')" style="color:white">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- ÉTAPE 1 : coller le lien -->
+      <div id="fbStep1">
+        <div style="background:var(--bleu-light);border-radius:12px;padding:14px;margin-bottom:18px">
+          <p style="font-size:0.88rem;color:var(--bleu);font-weight:600">Comment ça marche ?</p>
+          <ol style="font-size:0.83rem;color:#444;margin-top:8px;padding-left:18px;line-height:2">
+            <li>Ouvrez l'annonce sur <strong>Facebook Marketplace</strong></li>
+            <li>Copiez le lien depuis la barre d'adresse</li>
+            <li>Collez-le ci-dessous</li>
+            <li>Remplissez les infos manquantes dans le formulaire</li>
+          </ol>
+        </div>
+        <div class="form-group">
+          <label>Lien de l'annonce Facebook *</label>
+          <input type="url" id="fbUrl" placeholder="https://www.facebook.com/marketplace/item/..." style="font-size:0.85rem">
+          <p class="form-hint">Ex: https://www.facebook.com/marketplace/item/123456789/</p>
+        </div>
+        <button class="btn btn-green" style="width:100%" onclick="fbStep2()">Continuer →</button>
+      </div>
+
+      <!-- ÉTAPE 2 : guide visuel + saisie manuelle -->
+      <div id="fbStep2" style="display:none">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <button onclick="document.getElementById('fbStep1').style.display='block';document.getElementById('fbStep2').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:0.85rem;color:var(--bleu)">← Retour</button>
+          <span style="font-size:0.85rem;color:var(--gris-text)">Étape 2 : Renseignez les informations de l'annonce</span>
+        </div>
+
+        <!-- Lien affiché -->
+        <div style="background:var(--gris);border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.2rem">🔗</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:0.78rem;color:var(--gris-text)">Annonce Facebook</div>
+            <div id="fbUrlDisplay" style="font-size:0.82rem;color:var(--bleu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+          </div>
+          <button onclick="window.open(document.getElementById('fbUrl').value,'_blank')" class="btn btn-outline btn-sm" style="color:var(--bleu);border-color:var(--bleu);flex-shrink:0">Ouvrir 🔗</button>
+        </div>
+
+        <!-- Guide visuel -->
+        <div style="background:#fff8e1;border-radius:12px;padding:14px;margin-bottom:16px;border-left:4px solid #f59e0b">
+          <p style="font-size:0.85rem;font-weight:700;color:#92400e;margin-bottom:8px">💡 Astuce : Ouvrez l'annonce Facebook à côté et copiez les informations</p>
+          <p style="font-size:0.8rem;color:#78350f">Copiez le titre, le prix et la description depuis l'annonce Facebook puis collez-les dans les champs ci-dessous.</p>
+        </div>
+
+        <!-- Formulaire de saisie guidée -->
+        <div class="form-group">
+          <label>📝 Titre de l'annonce *</label>
+          <input type="text" id="fbTitle" placeholder="Copiez le titre depuis Facebook">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>💰 Prix (FCFA) *</label>
+            <input type="number" id="fbPrice" placeholder="Ex: 50000">
+          </div>
+          <div class="form-group">
+            <label>🏙️ Ville *</label>
+            <select id="fbCity">
+              <option>Libreville</option><option>Port-Gentil</option><option>Franceville</option>
+              <option>Oyem</option><option>Lambaréné</option><option>Moanda</option>
+              <option>Tchibanga</option><option>Koula-Moutou</option><option>Makokou</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>📋 Description *</label>
+          <textarea id="fbDesc" placeholder="Copiez la description depuis Facebook..." style="min-height:90px"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>📂 Catégorie</label>
+            <select id="fbCategory"></select>
+          </div>
+          <div class="form-group">
+            <label>🏷️ État</label>
+            <select id="fbCondition">
+              <option value="Neuf">Neuf</option>
+              <option value="Très bon état">Très bon état</option>
+              <option value="Bon état" selected>Bon état</option>
+              <option value="Occasion">Occasion</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Note sur les photos -->
+        <div style="background:var(--vert-light);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--vert-dark)">
+          <strong>📸 Photos</strong> — Après import, vous pourrez ajouter les photos manuellement dans le formulaire de publication. Téléchargez-les depuis Facebook et uploadez-les sur GabonCoin.
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" style="flex:1" onclick="closeModal('modalFbImport')">Annuler</button>
+          <button class="btn btn-green" style="flex:2" onclick="importFromFacebook()">✅ Importer et publier</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -1299,7 +1417,77 @@ function openContactMessage(ad) {
 }
 
 // ═══════════════════════════════════════════════════
-//  PHOTO UPLOAD — 4 emplacements indépendants
+//  IMPORT FACEBOOK
+// ═══════════════════════════════════════════════════
+function openFbImport() {
+  if(!state.currentUser) {
+    closeModal('modalPost');
+    document.getElementById('modalAuth').classList.remove('hidden');
+    showToast('⚠️ Connectez-vous d\'abord pour publier');
+    return;
+  }
+  // Reset étapes
+  document.getElementById('fbStep1').style.display = 'block';
+  document.getElementById('fbStep2').style.display = 'none';
+  document.getElementById('fbUrl').value = '';
+  document.getElementById('fbTitle').value = '';
+  document.getElementById('fbPrice').value = '';
+  document.getElementById('fbDesc').value = '';
+  // Peupler catégories
+  const catSel = document.getElementById('fbCategory');
+  if(catSel) catSel.innerHTML = state.categories.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+  document.getElementById('modalFbImport').classList.remove('hidden');
+}
+
+function fbStep2() {
+  const url = document.getElementById('fbUrl').value.trim();
+  if(!url) { showToast('⚠️ Collez un lien Facebook'); return; }
+  // Valider que c'est un lien Facebook
+  if(!url.includes('facebook.com') && !url.includes('fb.com')) {
+    showToast('⚠️ Ce lien ne semble pas être un lien Facebook'); return;
+  }
+  // Afficher l'étape 2
+  document.getElementById('fbStep1').style.display = 'none';
+  document.getElementById('fbStep2').style.display = 'block';
+  document.getElementById('fbUrlDisplay').textContent = url;
+  // Essayer d'extraire l'ID du marketplace depuis l'URL
+  const match = url.match(/marketplace\/item\/(\d+)/);
+  if(match) {
+    showToast('🔗 Lien Facebook détecté ! Remplissez les informations ci-dessous.');
+  }
+}
+
+function importFromFacebook() {
+  const title = document.getElementById('fbTitle').value.trim();
+  const price = document.getElementById('fbPrice').value.trim();
+  const desc  = document.getElementById('fbDesc').value.trim();
+  const url   = document.getElementById('fbUrl').value.trim();
+  if(!title || !price || !desc) {
+    showToast('⚠️ Remplissez au moins le titre, le prix et la description');
+    return;
+  }
+  // Fermer modal Facebook
+  document.getElementById('modalFbImport').classList.add('hidden');
+  // Ouvrir modal de publication et pré-remplir
+  populateCategorySelect();
+  document.getElementById('modalPost').classList.remove('hidden');
+  // Pré-remplir les champs
+  setTimeout(() => {
+    document.getElementById('postTitle').value = title;
+    document.getElementById('postPrice').value = price;
+    document.getElementById('postDesc').value  = desc + (url ? `\n\n🔗 Source : ${url}` : '');
+    // Catégorie et ville
+    const fbCat  = document.getElementById('fbCategory')?.value;
+    const fbCity = document.getElementById('fbCity')?.value;
+    const fbCond = document.getElementById('fbCondition')?.value;
+    if(fbCat)  document.getElementById('postCategory').value  = fbCat;
+    if(fbCity) document.getElementById('postCity').value      = fbCity;
+    if(fbCond) document.getElementById('postCondition').value = fbCond;
+    // Adapter le formulaire selon la catégorie
+    adaptPostForm(fbCat);
+    showToast('✅ Formulaire pré-rempli ! Ajoutez vos photos et publiez.');
+  }, 100);
+}
 // ═══════════════════════════════════════════════════
 let selectedPhotos = [null, null, null, null]; // 4 slots base64
 let currentSlot = 0;
@@ -2047,6 +2235,7 @@ function showToast(msg) {
 Object.assign(window, {
   filterCategory, filterCity, doSearch, openDetail, submitAd,
   triggerSlot, loadSlotPhoto, removeSlot, adaptPostForm,
+  openFbImport, fbStep2, importFromFacebook,
   doLogin, doRegister, doLogout, switchAuthTab, showForgotPassword, showLoginTab, doForgotPassword,
   openModal, closeModal, populateCategorySelect,
   openAdminPanel, switchAdminTab, addCategory, deleteCategory,
